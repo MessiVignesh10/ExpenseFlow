@@ -7,7 +7,7 @@ import kotlin.getValue
 object RetrofitInstance {
     val api  : ApiService by lazy {
         Retrofit.Builder()
-            .baseUrl("https://688f79a8f21ab1769f895381.mockapi.io/")
+            .baseUrl("https://68b33c58c28940c9e69e7d03.mockapi.io")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)
