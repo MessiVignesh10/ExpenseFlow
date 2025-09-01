@@ -1,25 +1,28 @@
 package com.example.expenseflow.presentation.dashboard
 
 import android.annotation.SuppressLint
-import android.graphics.drawable.Icon
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -31,7 +34,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
@@ -46,19 +48,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.expenseflow.R
 import com.example.expenseflow.data.model.Expense
 import com.example.expenseflow.ui.theme.greenPrimary
+import com.example.expenseflow.ui.theme.greenSecondary
 import com.example.expenseflow.viewmodel.AddScreenState
 import com.example.expenseflow.viewmodel.AddScreenViewModel
 
@@ -67,6 +69,12 @@ data class BottomNavItem(
     val icon: Painter,
     val label: String,
     val route: String
+)
+
+data class SummaryCards(
+    val image: Int,
+    val title: String,
+    val value: String
 )
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UnrememberedMutableState")
@@ -86,7 +94,7 @@ fun DashboardScreen(modifier: Modifier = Modifier) {
     Scaffold(modifier.fillMaxSize(), bottomBar = {
         BottomAppBar(
             modifier.fillMaxWidth(),
-            containerColor = Color.Transparent,
+            containerColor = Color.White,
         ) {
             bottomNavItems.forEachIndexed { index, item ->
                 NavigationBarItem(
@@ -104,10 +112,10 @@ fun DashboardScreen(modifier: Modifier = Modifier) {
                 )
             }
         }
-    }) {
+    }) { innerpadding ->
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.verticalScroll(rememberScrollState())
+            modifier = Modifier.verticalScroll(rememberScrollState()).padding(innerpadding)
         ) {
             OverallDashboardMain()
         }
@@ -122,11 +130,109 @@ fun OverallDashboardMain(modifier: Modifier = Modifier) {
             .statusBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        DashboardOverview()
+        Spacer(modifier.height(16.dp))
+        DashBoardSummary()
+        Spacer(modifier.height(16.dp))
         AddNewExpenseButton(modifier.padding(top = 50.dp))
         Spacer(modifier.height(16.dp))
         SampleHistory()
         Spacer(modifier.height(16.dp))
         AnalyticsAndHistoryOnDashboard()
+    }
+}
+
+@Composable
+fun DashBoardSummary(modifier: Modifier = Modifier) {
+
+    val gridItems = listOf(
+        SummaryCards(image = R.drawable.calendar, title = "This Month", value = "10.00"),
+        SummaryCards(image = R.drawable.dollar, title = "This Week", value = "0.00"),
+        SummaryCards(image = R.drawable.grossprofit, title = "Total Expenses", value = "9"),
+        SummaryCards(image = R.drawable.loss, title = "Avg per Day", value = "0.32")
+    )
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        contentPadding = PaddingValues(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = Modifier.fillMaxWidth().heightIn(0.dp,360.dp).background(Color.Transparent)
+    ) {
+        items(gridItems) { item ->
+            Card(
+                modifier.clickable(onClick = {}),
+                shape = RoundedCornerShape(20.dp),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 30.dp, pressedElevation = 50.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
+            ) {
+                DashboardSummaryContent(image = item.image, title = item.title, value = item.value)
+            }
+        }
+    }
+}
+
+@Composable
+fun DashboardSummaryContent(
+    modifier: Modifier = Modifier,
+    image: Int,
+    title: String,
+    value: String
+) {
+    Column(
+        modifier
+            .fillMaxWidth()
+            .padding(20.dp),
+        horizontalAlignment = Alignment.Start
+    ) {
+        Image(
+            painter = painterResource(id = image),
+            contentDescription = null,
+            modifier.size(50.dp)
+        )
+        Spacer(modifier.height(10.dp))
+        Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        Spacer(modifier.height(10.dp))
+        Text(value, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
+    }
+}
+
+@Composable
+fun DashboardOverview(modifier: Modifier = Modifier) {
+
+    val overviewText = buildAnnotatedString {
+        withStyle(
+            SpanStyle(
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 28.sp,
+                color = greenPrimary
+            )
+        ) {
+            append("$0.00 ")
+        }
+        withStyle(SpanStyle(fontWeight = FontWeight.Normal, color = Color.Black)) {
+            append("spent today")
+        }
+    }
+
+
+    Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Text("Today's Overivew", fontWeight = FontWeight.ExtraBold, fontSize = 24.sp)
+        Spacer(modifier.height(10.dp))
+        Card(
+            modifier.size(200.dp, 50.dp),
+            shape = RoundedCornerShape(30.dp),
+            colors = CardDefaults.cardColors(containerColor = greenSecondary)
+        ) {
+            Column(
+                modifier
+                    .fillMaxSize()
+                    .padding(start = 10.dp, end = 10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(overviewText)
+            }
+        }
     }
 }
 
@@ -235,7 +341,7 @@ fun SampleHistory(
 ) {
     val state by viewModel.uiState.collectAsState()
 
-    Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         when (val s = state) {
             is AddScreenState.Loading -> {
                 CircularProgressIndicator()
@@ -267,15 +373,13 @@ fun SampleHistory(
                     elevation = CardDefaults.elevatedCardElevation(defaultElevation = 25.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
-                    ExpenseDetailRow()
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 20.dp)
-                    ) {
-
-                        items(s.expenses.size) { idx ->
-                            ExpenseRow(s.expenses[idx])
+                    Column(Modifier.fillMaxWidth()) {
+                        ExpenseDetailRow()
+                        // Replace LazyColumn with a simple Column so content just grows
+                        Column(Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
+                            s.expenses.forEach { expense ->
+                                ExpenseRow(expense)
+                            }
                         }
                     }
                 }
@@ -299,7 +403,8 @@ fun ExpenseDetailRow(modifier: Modifier = Modifier) {
             "View All \u2192",
             fontWeight = FontWeight.Bold,
             color = greenPrimary,
-            fontSize = 20.sp
+            fontSize = 20.sp,
+            modifier = Modifier.clickable(onClick = {})
         )
     }
 }
