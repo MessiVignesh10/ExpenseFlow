@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.expenseflow.presentation.add.AddExpenseScreen
 import com.example.expenseflow.presentation.dashboard.DashboardScreen
 import com.example.expenseflow.ui.theme.ExpenseFlowTheme
 
@@ -20,7 +21,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ExpenseFlowTheme {
-                DashboardScreen()
+                AddExpenseScreen()
             }
         }
     }
