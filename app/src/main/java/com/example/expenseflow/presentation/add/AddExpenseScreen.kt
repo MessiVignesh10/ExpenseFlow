@@ -2,6 +2,7 @@ package com.example.expenseflow.presentation.add
 
 import android.annotation.SuppressLint
 import android.graphics.drawable.Icon
+import android.media.Image
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -35,6 +36,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -68,6 +71,11 @@ import com.example.expenseflow.ui.theme.greenPrimary
 data class Categories(
     val picture: Int,
     val categoryName: String
+)
+
+data class PaymentItems(
+    val paymentIcon: Painter,
+    val paymentName: String
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -141,13 +149,137 @@ fun OverallAddScreen(modifier: Modifier = Modifier) {
         CategorySection()
         Spacer(modifier.height(20.dp))
         DateSection()
+        Spacer(modifier.height(20.dp))
+        DescriptionSection()
+        Spacer(modifier.height(20.dp))
+        PaymentMethodSection()
+        Spacer(modifier.height(20.dp))
+        AddExpenseButton()
     }
 }
 
 @Composable
-fun PaymentSection(modifier: Modifier = Modifier) {
-    
+fun AddExpenseButton(modifier: Modifier = Modifier) {
+    Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Button(
+            onClick = {},
+            modifier
+                .fillMaxWidth()
+                .height(60.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = greenPrimary)
+        ) {
+            Text("✓ Add Expense")
+        }
+    }
 }
+
+@Composable
+fun PaymentMethodSection(modifier: Modifier = Modifier) {
+
+    var selectedPaymentMethod by remember { mutableStateOf<String?>(null) }
+
+    val paymentItems = listOf(
+        PaymentItems(painterResource(id = R.drawable.dollars), "Cash"),
+        PaymentItems(painterResource(id = R.drawable.atmcard), "Card"),
+        PaymentItems(painterResource(id = R.drawable.mobilebanking), "Digital"),
+    )
+    ElevatedCard(
+        modifier.fillMaxWidth(),
+        colors = CardDefaults.elevatedCardColors(containerColor = Color.White),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 30.dp)
+    ) {
+        Column(
+            modifier
+                .fillMaxWidth()
+                .padding(10.dp)
+        ) {
+            Text("Payment Method", fontWeight = FontWeight.Medium, fontSize = 16.sp)
+            Spacer(modifier.height(30.dp))
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3), modifier
+                    .fillMaxWidth()
+                    .size(width = 400.dp, height = 100.dp)
+            ) {
+                items(paymentItems) { item ->
+
+                    val isSelected = selectedPaymentMethod == item.paymentName
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = if (isSelected) greenPrimary else Color.White),
+                        modifier = Modifier.clickable(onClick = {
+                            selectedPaymentMethod = item.paymentName
+                        })
+                    ) {
+                        Column(
+                            modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Image(
+                                painter = item.paymentIcon,
+                                contentDescription = item.paymentName,
+                                modifier.size(50.dp)
+                            )
+                            Spacer(modifier.height(10.dp))
+                            Text(
+                                item.paymentName,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = if (isSelected) Color.White else Color.Black
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun DescriptionSection(modifier: Modifier = Modifier) {
+
+    var description by remember { mutableStateOf("") }
+
+
+    ElevatedCard(
+        modifier.fillMaxWidth(),
+        colors = CardDefaults.elevatedCardColors(containerColor = Color.White),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 30.dp)
+    ) {
+        Column(
+            modifier
+                .fillMaxWidth()
+                .padding(10.dp)
+        ) {
+            Text("Description (Optional)", fontWeight = FontWeight.Medium, fontSize = 16.sp)
+        }
+        BasicTextField(
+            value = description,
+            onValueChange = { description = it },
+            modifier
+                .padding(top = 10.dp, start = 30.dp)
+                .fillMaxWidth()
+                .size(width = 300.dp, height = 100.dp),
+            decorationBox = { innerTextField ->
+                if (description.isBlank()) {
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = slideInVertically(tween(durationMillis = 200)),
+                        exit = slideOutVertically(tween(durationMillis = 200))
+                    ) {
+                        Text(
+                            "What did you spend on?",
+                            color = Color.Gray,
+                        )
+                    }
+                } else innerTextField()
+            }
+        )
+    }
+}
+
 @Composable
 fun DateSection(modifier: Modifier = Modifier) {
     var date by remember { mutableStateOf("") }
@@ -315,5 +447,5 @@ fun AmountSection(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 private fun Pri() {
-    AddExpenseScreen()
+    AddExpenseButton()
 }
