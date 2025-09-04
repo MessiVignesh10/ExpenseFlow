@@ -57,19 +57,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.expenseflow.R
 import com.example.expenseflow.data.model.Expense
+import com.example.expenseflow.presentation.navigation.NavState
 import com.example.expenseflow.ui.theme.greenPrimary
 import com.example.expenseflow.ui.theme.greenSecondary
 import com.example.expenseflow.viewmodel.AddScreenState
 import com.example.expenseflow.viewmodel.HistoryViewModel
 
 
-data class BottomNavItem(
-    val icon: Painter,
-    val label: String,
-    val route: String
-)
+
 
 data class SummaryCards(
     val image: Int,
@@ -79,48 +78,15 @@ data class SummaryCards(
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UnrememberedMutableState")
 @Composable
-fun DashboardScreen(modifier: Modifier = Modifier) {
-
-    val bottomNavItems =
-        listOf(
-            BottomNavItem(painterResource(id = R.drawable.home), "Home", "home"),
-            BottomNavItem(painterResource(id = R.drawable.add), "Add", "add"),
-            BottomNavItem(painterResource(id = R.drawable.analysis), "Analysis", "analytics"),
-            BottomNavItem(painterResource(id = R.drawable.history), "Recents", "history")
-        )
-    var selectedIndex by remember { mutableStateOf(0) }
-
-
-    Scaffold(modifier.fillMaxSize(), bottomBar = {
-        BottomAppBar(
-            modifier.fillMaxWidth(),
-            containerColor = Color.White,
-        ) {
-            bottomNavItems.forEachIndexed { index, item ->
-                NavigationBarItem(
-                    selected = index == selectedIndex,
-                    onClick = { selectedIndex = index },
-                    icon = { Icon(painter = item.icon, contentDescription = item.label) },
-                    label = { Text(item.label) },
-                    alwaysShowLabel = true,
-                    modifier = Modifier.size(30.dp),
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.White,
-                        unselectedTextColor = Color.White,
-                        indicatorColor = greenPrimary
-                    )
-                )
-            }
-        }
-    }) { innerpadding ->
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.verticalScroll(rememberScrollState()).padding(innerpadding)
-        ) {
-            OverallDashboardMain()
-        }
+fun DashboardScreen(modifier: Modifier = Modifier, navController: NavController) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.verticalScroll(rememberScrollState())
+    ) {
+        OverallDashboardMain()
     }
 }
+
 
 @Composable
 fun OverallDashboardMain(modifier: Modifier = Modifier) {
@@ -156,13 +122,19 @@ fun DashBoardSummary(modifier: Modifier = Modifier) {
         contentPadding = PaddingValues(10.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
-        modifier = Modifier.fillMaxWidth().heightIn(0.dp,360.dp).background(Color.Transparent)
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(0.dp, 360.dp)
+            .background(Color.Transparent)
     ) {
         items(gridItems) { item ->
             Card(
                 modifier.clickable(onClick = {}),
                 shape = RoundedCornerShape(20.dp),
-                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 30.dp, pressedElevation = 50.dp),
+                elevation = CardDefaults.elevatedCardElevation(
+                    defaultElevation = 30.dp,
+                    pressedElevation = 50.dp
+                ),
                 colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
                 DashboardSummaryContent(image = item.image, title = item.title, value = item.value)
@@ -376,7 +348,9 @@ fun SampleHistory(
                     Column(Modifier.fillMaxWidth()) {
                         ExpenseDetailRow()
                         // Replace LazyColumn with a simple Column so content just grows
-                        Column(Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
+                        Column(Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp)) {
                             s.expenses.forEach { expense ->
                                 ExpenseRow(expense)
                             }
@@ -437,5 +411,6 @@ fun ExpenseRow(expense: Expense) {
 @Preview
 @Composable
 private fun Pri() {
-    DashboardScreen()
+    val navController = rememberNavController()
+    DashboardScreen(navController = navController)
 }

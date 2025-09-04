@@ -40,15 +40,20 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -72,13 +77,11 @@ import com.example.expenseflow.ui.theme.greenPrimary
 import com.example.expenseflow.viewmodel.AddScreenViewmodel
 
 data class Categories(
-    val picture: Int,
-    val categoryName: String
+    val picture: Int, val categoryName: String
 )
 
 data class PaymentItems(
-    val paymentIcon: Painter,
-    val paymentName: String
+    val paymentIcon: Painter, val paymentName: String
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -88,46 +91,42 @@ fun AddExpenseScreen(modifier: Modifier = Modifier) {
 
 
     Scaffold(topBar = {
-        TopAppBar(
-            title = {
+        TopAppBar(title = {
+            Column(
+                modifier
+                    .fillMaxWidth()
+                    .padding(start = 20.dp)
+            ) {
+                Text("Add Expense", fontWeight = FontWeight.Bold, fontSize = 24.sp)
+                Text(
+                    "Track your spending",
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 16.sp,
+                    color = Color.Gray
+                )
+            }
+        }, modifier = Modifier.padding(10.dp), navigationIcon = {
+            Card(
+                modifier
+                    .size(36.dp)
+                    .clickable(onClick = {}),
+                shape = CircleShape,
+                elevation = CardDefaults.elevatedCardElevation(pressedElevation = 30.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
+            ) {
                 Column(
-                    modifier
-                        .fillMaxWidth()
-                        .padding(start = 20.dp)
+                    modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    Text("Add Expense", fontWeight = FontWeight.Bold, fontSize = 24.sp)
-                    Text(
-                        "Track your spending",
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 16.sp,
-                        color = Color.Gray
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = null,
+                        modifier.size(20.dp)
                     )
                 }
-            },
-            modifier = Modifier.padding(10.dp),
-            navigationIcon = {
-                Card(
-                    modifier
-                        .size(36.dp)
-                        .clickable(onClick = {}),
-                    shape = CircleShape,
-                    elevation = CardDefaults.elevatedCardElevation(pressedElevation = 30.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                ) {
-                    Column(
-                        modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = null,
-                            modifier.size(20.dp)
-                        )
-                    }
-                }
             }
-        )
+        })
     }) { innerpadding ->
         Column(
             modifier
@@ -162,7 +161,8 @@ fun OverallAddScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun AddExpenseButton(modifier: Modifier = Modifier) {
+fun AddExpenseButton(modifier: Modifier = Modifier, viewmodel: AddScreenViewmodel = viewModel()) {
+    val validation by viewmodel.validation.collectAsState()
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Button(
             onClick = {},
@@ -170,6 +170,7 @@ fun AddExpenseButton(modifier: Modifier = Modifier) {
                 .fillMaxWidth()
                 .height(60.dp),
             shape = RoundedCornerShape(16.dp),
+            enabled = validation,
             colors = ButtonDefaults.buttonColors(containerColor = greenPrimary)
         ) {
             Text("✓ Add Expense")
@@ -178,9 +179,12 @@ fun AddExpenseButton(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun PaymentMethodSection(modifier: Modifier = Modifier) {
+fun PaymentMethodSection(
+    modifier: Modifier = Modifier,
+    viewmodel: AddScreenViewmodel = viewModel()
+) {
 
-    var selectedPaymentMethod by remember { mutableStateOf<String?>(null) }
+    val selectedPaymentMethod by viewmodel.selectedPaymentMethod.collectAsState()
 
     val paymentItems = listOf(
         PaymentItems(painterResource(id = R.drawable.dollars), "Cash"),
@@ -201,17 +205,17 @@ fun PaymentMethodSection(modifier: Modifier = Modifier) {
             Spacer(modifier.height(30.dp))
 
             LazyVerticalGrid(
-                columns = GridCells.Fixed(3), modifier
+                columns = GridCells.Fixed(3),
+                modifier
                     .fillMaxWidth()
                     .size(width = 400.dp, height = 100.dp)
             ) {
                 items(paymentItems) { item ->
-
                     val isSelected = selectedPaymentMethod == item.paymentName
                     Card(
                         colors = CardDefaults.cardColors(containerColor = if (isSelected) greenPrimary else Color.White),
                         modifier = Modifier.clickable(onClick = {
-                            selectedPaymentMethod = item.paymentName
+                            viewmodel.onPaymentSelection(item.paymentName)
                         })
                     ) {
                         Column(
@@ -241,9 +245,9 @@ fun PaymentMethodSection(modifier: Modifier = Modifier) {
 
 
 @Composable
-fun DescriptionSection(modifier: Modifier = Modifier) {
+fun DescriptionSection(modifier: Modifier = Modifier, viewmodel: AddScreenViewmodel = viewModel()) {
 
-    var description by remember { mutableStateOf("") }
+    val description by viewmodel.description.collectAsState()
 
 
     ElevatedCard(
@@ -260,7 +264,7 @@ fun DescriptionSection(modifier: Modifier = Modifier) {
         }
         BasicTextField(
             value = description,
-            onValueChange = { description = it },
+            onValueChange = viewmodel::onDescriptionChange,
             modifier
                 .padding(top = 10.dp, start = 30.dp)
                 .fillMaxWidth()
@@ -278,15 +282,38 @@ fun DescriptionSection(modifier: Modifier = Modifier) {
                         )
                     }
                 } else innerTextField()
-            }
-        )
+            })
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DateSection(modifier: Modifier = Modifier) {
-    var date by remember { mutableStateOf("") }
+fun DateSection(modifier: Modifier = Modifier, viewmodel: AddScreenViewmodel = viewModel()) {
 
+    val date by viewmodel.date.collectAsState()
+    val datePickerState = rememberDatePickerState()
+    var showDatePicker by remember { mutableStateOf(false) }
+
+
+    if (showDatePicker) {
+        DatePickerDialog(onDismissRequest = { showDatePicker = false }, confirmButton = {
+            TextButton(onClick = {
+                val selected = datePickerState.selectedDateMillis
+                if (selected != null) {
+                    viewmodel.onDatePicking(selected)
+                }
+                showDatePicker = false
+            }) {
+                Text("OK")
+            }
+        }, dismissButton = {
+            TextButton(onClick = { showDatePicker = false }) {
+                Text("Cancel")
+            }
+        }, tonalElevation = DatePickerDefaults.TonalElevation) {
+            DatePicker(state = datePickerState)
+        }
+    }
     ElevatedCard(
         modifier.fillMaxWidth(),
         colors = CardDefaults.elevatedCardColors(containerColor = Color.White),
@@ -303,11 +330,17 @@ fun DateSection(modifier: Modifier = Modifier) {
             TextField(
                 value = date,
                 onValueChange = {},
+                readOnly = true,
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.Transparent,
                     focusedContainerColor = Color.Transparent
                 ),
-                trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) },
+                trailingIcon = {
+                    Icon(
+                        Icons.Default.DateRange,
+                        contentDescription = null,
+                        modifier.clickable { showDatePicker = true })
+                },
                 modifier = Modifier.width(200.dp)
             )
         }
@@ -315,7 +348,7 @@ fun DateSection(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun CategorySection(modifier: Modifier = Modifier) {
+fun CategorySection(modifier: Modifier = Modifier, viewmodel: AddScreenViewmodel = viewModel()) {
 
     val categories = listOf(
         Categories(picture = R.drawable.cutlery, categoryName = "Food"),
@@ -330,7 +363,7 @@ fun CategorySection(modifier: Modifier = Modifier) {
     )
 
 
-    var selectedCategory by remember { mutableStateOf<String?>(null) }
+    val selectedCategory by viewmodel.selectedCategory.collectAsState()
 
     ElevatedCard(
         shape = RoundedCornerShape(20.dp),
@@ -353,7 +386,7 @@ fun CategorySection(modifier: Modifier = Modifier) {
                 Card(
                     modifier
                         .padding(10.dp)
-                        .clickable(onClick = { selectedCategory = item.categoryName }),
+                        .clickable(onClick = { viewmodel.onCategorySelection(item.categoryName) }),
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(containerColor = if (isSelected) greenPrimary else Color.White)
                 ) {
@@ -363,6 +396,7 @@ fun CategorySection(modifier: Modifier = Modifier) {
                         isSelected = isSelected
                     )
                 }
+
             }
         }
     }
@@ -370,10 +404,7 @@ fun CategorySection(modifier: Modifier = Modifier) {
 
 @Composable
 fun CategorySectionContent(
-    modifier: Modifier = Modifier,
-    picture: Int,
-    categoryName: String,
-    isSelected: Boolean
+    modifier: Modifier = Modifier, picture: Int, categoryName: String, isSelected: Boolean
 ) {
 
     Column(
@@ -403,8 +434,7 @@ fun AmountSection(modifier: Modifier = Modifier, viewmodel: AddScreenViewmodel =
             .size(width = 300.dp, height = 100.dp),
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = 30.dp,
-            pressedElevation = 50.dp
+            defaultElevation = 30.dp, pressedElevation = 50.dp
         ),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
@@ -416,7 +446,7 @@ fun AmountSection(modifier: Modifier = Modifier, viewmodel: AddScreenViewmodel =
             Text("Amount", fontWeight = FontWeight.Medium, fontSize = 16.sp)
             BasicTextField(
                 value = amount,
-                onValueChange = viewmodel :: onAmountChange,
+                onValueChange = viewmodel::onAmountChange,
                 modifier
                     .padding(top = 10.dp, start = 20.dp)
                     .size(width = 300.dp, height = 50.dp),
@@ -440,8 +470,7 @@ fun AmountSection(modifier: Modifier = Modifier, viewmodel: AddScreenViewmodel =
                             }
                         } else innerTextField()
                     }
-                }
-            )
+                })
         }
     }
 }
