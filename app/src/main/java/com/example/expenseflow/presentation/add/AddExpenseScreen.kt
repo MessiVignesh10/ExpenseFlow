@@ -50,6 +50,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,8 +66,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.expenseflow.R
 import com.example.expenseflow.ui.theme.greenPrimary
+import com.example.expenseflow.viewmodel.AddScreenViewmodel
 
 data class Categories(
     val picture: Int,
@@ -391,9 +394,8 @@ fun CategorySectionContent(
 }
 
 @Composable
-fun AmountSection(modifier: Modifier = Modifier) {
-
-    var amount by remember { mutableStateOf("") }
+fun AmountSection(modifier: Modifier = Modifier, viewmodel: AddScreenViewmodel = viewModel()) {
+    val amount by viewmodel.amount.collectAsState()
     ElevatedCard(
         onClick = {},
         modifier
@@ -414,7 +416,7 @@ fun AmountSection(modifier: Modifier = Modifier) {
             Text("Amount", fontWeight = FontWeight.Medium, fontSize = 16.sp)
             BasicTextField(
                 value = amount,
-                onValueChange = { amount = it },
+                onValueChange = viewmodel :: onAmountChange,
                 modifier
                     .padding(top = 10.dp, start = 20.dp)
                     .size(width = 300.dp, height = 50.dp),

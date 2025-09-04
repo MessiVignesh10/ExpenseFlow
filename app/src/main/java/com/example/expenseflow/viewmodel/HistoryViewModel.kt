@@ -14,7 +14,7 @@ sealed class AddScreenState(){
     data class Error(val message : String) : AddScreenState()
 }
 
-class AddScreenViewModel : ViewModel(){
+class HistoryViewModel : ViewModel(){
 
     private val repository = TransactionsRepository()
     private val _uiState = MutableStateFlow<AddScreenState>(AddScreenState.Loading)

@@ -62,7 +62,7 @@ import com.example.expenseflow.data.model.Expense
 import com.example.expenseflow.ui.theme.greenPrimary
 import com.example.expenseflow.ui.theme.greenSecondary
 import com.example.expenseflow.viewmodel.AddScreenState
-import com.example.expenseflow.viewmodel.AddScreenViewModel
+import com.example.expenseflow.viewmodel.HistoryViewModel
 
 
 data class BottomNavItem(
@@ -337,7 +337,7 @@ fun AddNewExpenseButton(modifier: Modifier = Modifier) {
 @Composable
 fun SampleHistory(
     modifier: Modifier = Modifier,
-    viewModel: AddScreenViewModel = viewModel()
+    viewModel: HistoryViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
 
