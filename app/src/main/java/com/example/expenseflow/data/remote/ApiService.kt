@@ -7,7 +7,7 @@ import retrofit2.http.POST
 
 interface ApiService {
     @GET("expenses")
-    suspend fun getExpenses(): List<Expense>
+    suspend fun getExpenses(): List<ExpenseDto>
 
     @POST("expenses")
     suspend fun addExpense(@Body expense: ExpenseDto) : ExpenseDto

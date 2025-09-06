@@ -165,7 +165,7 @@ fun AddExpenseButton(modifier: Modifier = Modifier, viewmodel: AddScreenViewmode
     val validation by viewmodel.validation.collectAsState()
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Button(
-            onClick = {},
+            onClick = {viewmodel.onAddExpense()},
             modifier
                 .fillMaxWidth()
                 .height(60.dp),
