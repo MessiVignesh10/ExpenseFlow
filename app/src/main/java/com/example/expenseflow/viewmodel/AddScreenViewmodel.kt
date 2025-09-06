@@ -65,14 +65,14 @@ class AddScreenViewmodel : ViewModel() {
     }
 
     fun onCategorySelection(input: String) {
-        _selectedCategory.value = input
+        _selectedCategory.value = input.lowercase()
         validate()
         println(input)
 
     }
 
     fun onPaymentSelection(input: String) {
-        _selectedPaymentMethod.value = input
+        _selectedPaymentMethod.value = input.lowercase()
         validate()
         println(_selectedPaymentMethod.value)
     }

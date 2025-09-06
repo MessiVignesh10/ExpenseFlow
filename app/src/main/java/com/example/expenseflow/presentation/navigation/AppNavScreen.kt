@@ -27,6 +27,7 @@ import androidx.navigation.compose.composable
 import com.example.expenseflow.R
 import com.example.expenseflow.presentation.add.AddExpenseScreen
 import com.example.expenseflow.presentation.dashboard.DashboardScreen
+import com.example.expenseflow.presentation.history.HistoryScreen
 import com.example.expenseflow.ui.theme.greenPrimary
 
 data class BottomNavItem(
@@ -58,7 +59,7 @@ fun AppNavScreen(modifier: Modifier = Modifier, navController: NavHostController
             BottomNavItem(
                 painterResource(id = R.drawable.history),
                 "Recents",
-                NavState.AddExpenseScreen.route
+                NavState.HistoryScreen.route
             )
         )
     val currentDestination =
@@ -105,7 +106,10 @@ fun AppNavScreen(modifier: Modifier = Modifier, navController: NavHostController
                 DashboardScreen(navController = navController)
             }
             composable(NavState.AddExpenseScreen.route) {
-                AddExpenseScreen()
+                AddExpenseScreen(navController = navController)
+            }
+            composable(NavState.HistoryScreen.route) {
+                HistoryScreen()
             }
         }
     }

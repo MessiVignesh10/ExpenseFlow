@@ -39,6 +39,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -78,18 +79,25 @@ data class SummaryCards(
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UnrememberedMutableState")
 @Composable
-fun DashboardScreen(modifier: Modifier = Modifier, navController: NavController) {
+fun DashboardScreen(modifier: Modifier = Modifier, navController: NavController , viewModel: HistoryViewModel = viewModel()) {
+
+    LaunchedEffect(Unit) {
+        navController.currentBackStackEntry
+            ?.savedStateHandle
+        viewModel.loadExpenses()
+    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.verticalScroll(rememberScrollState())
     ) {
-        OverallDashboardMain()
+        OverallDashboardMain(navController = navController)
     }
 }
 
 
 @Composable
-fun OverallDashboardMain(modifier: Modifier = Modifier) {
+fun OverallDashboardMain(modifier: Modifier = Modifier , navController: NavController) {
     Column(
         modifier
             .fillMaxWidth()
@@ -100,9 +108,9 @@ fun OverallDashboardMain(modifier: Modifier = Modifier) {
         Spacer(modifier.height(16.dp))
         DashBoardSummary()
         Spacer(modifier.height(16.dp))
-        AddNewExpenseButton(modifier.padding(top = 50.dp))
+        AddNewExpenseButton(modifier.padding(top = 50.dp) , navController = navController)
         Spacer(modifier.height(16.dp))
-        SampleHistory()
+        SampleHistory(navController = navController)
         Spacer(modifier.height(16.dp))
         AnalyticsAndHistoryOnDashboard()
     }
@@ -285,9 +293,9 @@ fun AnalyticsOnDashboard(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun AddNewExpenseButton(modifier: Modifier = Modifier) {
+fun AddNewExpenseButton(modifier: Modifier = Modifier,navController: NavController) {
     Button(
-        onClick = {},
+        onClick = {navController.navigate(NavState.AddExpenseScreen.route)},
         modifier = Modifier
             .padding(top = 20.dp)
             .size(height = 50.dp, width = 200.dp),
@@ -309,7 +317,8 @@ fun AddNewExpenseButton(modifier: Modifier = Modifier) {
 @Composable
 fun SampleHistory(
     modifier: Modifier = Modifier,
-    viewModel: HistoryViewModel = viewModel()
+    viewModel: HistoryViewModel = viewModel(),
+    navController: NavController
 ) {
     val state by viewModel.uiState.collectAsState()
 
@@ -346,7 +355,7 @@ fun SampleHistory(
                     colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
                     Column(Modifier.fillMaxWidth()) {
-                        ExpenseDetailRow()
+                        ExpenseDetailRow(navController = navController)
                         // Replace LazyColumn with a simple Column so content just grows
                         Column(Modifier
                             .fillMaxWidth()
@@ -364,7 +373,7 @@ fun SampleHistory(
 
 
 @Composable
-fun ExpenseDetailRow(modifier: Modifier = Modifier) {
+fun ExpenseDetailRow(modifier: Modifier = Modifier , navController: NavController) {
     Row(
         modifier
             .fillMaxWidth()
@@ -378,7 +387,7 @@ fun ExpenseDetailRow(modifier: Modifier = Modifier) {
             fontWeight = FontWeight.Bold,
             color = greenPrimary,
             fontSize = 20.sp,
-            modifier = Modifier.clickable(onClick = {})
+            modifier = Modifier.clickable(onClick = {navController.navigate(NavState.HistoryScreen.route)})
         )
     }
 }

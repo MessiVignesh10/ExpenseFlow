@@ -32,10 +32,10 @@ fun Expense.toDto(): ExpenseDto = ExpenseDto(
 )
 
 
-fun String.toCategory() : Category = Category.values().firstOrNull {
+fun String.toCategory() : Category = Category.entries.firstOrNull {
     it.label == this
 } ?: Category.OTHER
 
-fun String.toPaymentMethod() : PaymentMethod = PaymentMethod.values().firstOrNull() {
+fun String.toPaymentMethod() : PaymentMethod = PaymentMethod.entries.firstOrNull() {
     it.label == this
 } ?: PaymentMethod.CASH

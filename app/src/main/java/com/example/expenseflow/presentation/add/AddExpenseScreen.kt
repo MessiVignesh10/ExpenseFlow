@@ -72,7 +72,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.expenseflow.R
+import com.example.expenseflow.presentation.navigation.NavState
 import com.example.expenseflow.ui.theme.greenPrimary
 import com.example.expenseflow.viewmodel.AddScreenViewmodel
 
@@ -87,7 +90,7 @@ data class PaymentItems(
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AddExpenseScreen(modifier: Modifier = Modifier) {
+fun AddExpenseScreen(modifier: Modifier = Modifier , navController: NavController) {
 
 
     Scaffold(topBar = {
@@ -122,7 +125,7 @@ fun AddExpenseScreen(modifier: Modifier = Modifier) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = null,
-                        modifier.size(20.dp)
+                        modifier.size(20.dp).clickable(onClick = {navController.navigate(NavState.DashBoardScreen.route)})
                     )
                 }
             }
@@ -134,13 +137,13 @@ fun AddExpenseScreen(modifier: Modifier = Modifier) {
                 .statusBarsPadding()
                 .verticalScroll(rememberScrollState())
         ) {
-            OverallAddScreen()
+            OverallAddScreen(navController = navController)
         }
     }
 }
 
 @Composable
-fun OverallAddScreen(modifier: Modifier = Modifier) {
+fun OverallAddScreen(modifier: Modifier = Modifier , navController: NavController) {
     Column(
         modifier
             .fillMaxWidth()
@@ -156,16 +159,25 @@ fun OverallAddScreen(modifier: Modifier = Modifier) {
         Spacer(modifier.height(20.dp))
         PaymentMethodSection()
         Spacer(modifier.height(20.dp))
-        AddExpenseButton()
+        AddExpenseButton(navController = navController)
     }
 }
 
 @Composable
-fun AddExpenseButton(modifier: Modifier = Modifier, viewmodel: AddScreenViewmodel = viewModel()) {
+fun AddExpenseButton(
+    modifier: Modifier = Modifier,
+    viewmodel: AddScreenViewmodel = viewModel(),
+    navController: NavController
+) {
     val validation by viewmodel.validation.collectAsState()
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Button(
-            onClick = {viewmodel.onAddExpense()},
+            onClick = {
+                viewmodel.onAddExpense()
+                navController.previousBackStackEntry
+                    ?.savedStateHandle
+                navController.popBackStack()
+            },
             modifier
                 .fillMaxWidth()
                 .height(60.dp),
@@ -478,5 +490,6 @@ fun AmountSection(modifier: Modifier = Modifier, viewmodel: AddScreenViewmodel =
 @Preview
 @Composable
 private fun Pri() {
-    AddExpenseButton()
+    val navController = rememberNavController()
+    AddExpenseButton(navController = navController)
 }
