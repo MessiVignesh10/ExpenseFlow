@@ -8,32 +8,60 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-sealed class AddScreenState(){
-    object Loading: AddScreenState()
-    data class Success(val expenses : List<Expense>) : AddScreenState()
-    data class Error(val message : String) : AddScreenState()
+sealed class HistoryState() {
+    object Loading : HistoryState()
+    data class Success(val expenses: List<Expense>) : HistoryState()
+    data class Error(val message: String) : HistoryState()
 }
 
-class HistoryViewModel : ViewModel(){
+class HistoryViewModel : ViewModel() {
 
     private val repository = TransactionsRepository()
-    private val _uiState = MutableStateFlow<AddScreenState>(AddScreenState.Loading)
-    val uiState : StateFlow<AddScreenState> = _uiState
+    private val _uiState = MutableStateFlow<HistoryState>(HistoryState.Loading)
+    val uiState: StateFlow<HistoryState> = _uiState
+
+    private val _query = MutableStateFlow<String>("")
+    val query: StateFlow<String> = _query
+
+    private val _dropDownCategories = MutableStateFlow(listOf("Food" ,"Transport","Fun","Shopping","Health","Bills","Education","Travel","Other","All Categories"))
+    val dropDownCategories : StateFlow<List<String>> = _dropDownCategories
+
+    private val _selectedCategory = MutableStateFlow("All Categories")
+    val selectedCategory : StateFlow<String> = _selectedCategory
+
+
+    private val _sortOptions = MutableStateFlow(listOf("Date" ,"Amount", "None"))
+    val sortOptions : StateFlow<List<String>> = _sortOptions
+
+    private val _selectedSort = MutableStateFlow("None")
+    val selectedSort : StateFlow<String> = _selectedSort
 
 
     init {
         loadExpenses()
     }
-
-     fun loadExpenses(){
+    fun loadExpenses() {
         viewModelScope.launch {
-            _uiState.value = AddScreenState.Loading
+            _uiState.value = HistoryState.Loading
             try {
                 val expenses = repository.getExpenses()
-                _uiState.value = AddScreenState.Success(expenses)
-            } catch (e : Exception){
-                _uiState.value = AddScreenState.Error(e.localizedMessage ?: "Something Went Wrong")
+                _uiState.value = HistoryState.Success(expenses)
+            } catch (e: Exception) {
+                _uiState.value = HistoryState.Error(e.localizedMessage ?: "Something Went Wrong")
             }
         }
     }
+
+    fun onQueryChange(input : String){
+        _query.value = input
+    }
+
+    fun onExpandedChange(input : String){
+        _selectedCategory.value = input
+    }
+
+    fun onSortChange(input : String){
+        _selectedSort.value = input
+    }
 }
+

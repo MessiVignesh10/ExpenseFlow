@@ -37,4 +37,5 @@ data class Expense(
     val date : String,
     val description : String,
     val paymentMethod : PaymentMethod,
+    val createdAt : Number ?= System.currentTimeMillis()
 )

@@ -7,7 +7,7 @@ import java.util.Locale
 
 fun formattedDescription(input : String):String{
     if (input.length >1) {
-        return input.take(1).toUpperCase() + input.substring(1..input.length - 1)
+        return input.take(1).uppercase() + input.substring(1..input.length - 1)
     } else return input
 }
 

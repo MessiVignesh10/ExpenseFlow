@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
@@ -56,6 +58,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -65,7 +68,7 @@ import com.example.expenseflow.data.model.Expense
 import com.example.expenseflow.presentation.navigation.NavState
 import com.example.expenseflow.ui.theme.greenPrimary
 import com.example.expenseflow.ui.theme.greenSecondary
-import com.example.expenseflow.viewmodel.AddScreenState
+import com.example.expenseflow.viewmodel.HistoryState
 import com.example.expenseflow.viewmodel.HistoryViewModel
 
 
@@ -324,11 +327,11 @@ fun SampleHistory(
 
     Box(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         when (val s = state) {
-            is AddScreenState.Loading -> {
+            is HistoryState.Loading -> {
                 CircularProgressIndicator()
             }
 
-            is AddScreenState.Error -> {
+            is HistoryState.Error -> {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(s.message, color = Color.Red)
                     Spacer(Modifier.height(8.dp))
@@ -345,11 +348,12 @@ fun SampleHistory(
                 }
             }
 
-            is AddScreenState.Success -> {
+            is HistoryState.Success -> {
                 Card(
                     modifier
-                        .size(500.dp)
-                        .padding(start = 10.dp, end = 10.dp),
+                        .fillMaxWidth()
+                        .padding(start = 10.dp, end = 10.dp)
+                        .heightIn(max = 500.dp),
                     shape = RoundedCornerShape(10.dp),
                     elevation = CardDefaults.elevatedCardElevation(defaultElevation = 25.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White)

@@ -223,7 +223,7 @@ fun PaymentMethodSection(
                     .size(width = 400.dp, height = 100.dp)
             ) {
                 items(paymentItems) { item ->
-                    val isSelected = selectedPaymentMethod == item.paymentName
+                    val isSelected = selectedPaymentMethod == item.paymentName.lowercase()
                     Card(
                         colors = CardDefaults.cardColors(containerColor = if (isSelected) greenPrimary else Color.White),
                         modifier = Modifier.clickable(onClick = {
@@ -394,7 +394,7 @@ fun CategorySection(modifier: Modifier = Modifier, viewmodel: AddScreenViewmodel
                 .size(width = 400.dp, height = 380.dp)
         ) {
             items(categories) { item ->
-                val isSelected = selectedCategory == item.categoryName
+                val isSelected = selectedCategory == item.categoryName.lowercase()
                 Card(
                     modifier
                         .padding(10.dp)
