@@ -94,22 +94,22 @@ fun DashboardScreen(modifier: Modifier = Modifier, navController: NavController 
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.verticalScroll(rememberScrollState())
     ) {
-        OverallDashboardMain(navController = navController)
+        OverallDashboardMain(navController = navController , viewModel = viewModel)
     }
 }
 
 
 @Composable
-fun OverallDashboardMain(modifier: Modifier = Modifier , navController: NavController) {
+fun OverallDashboardMain(modifier: Modifier = Modifier , navController: NavController , viewModel: HistoryViewModel) {
     Column(
         modifier
             .fillMaxWidth()
             .statusBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        DashboardOverview()
+        DashboardOverview(viewModel = viewModel)
         Spacer(modifier.height(16.dp))
-        DashBoardSummary()
+        DashBoardSummary(viewModel = viewModel)
         Spacer(modifier.height(16.dp))
         AddNewExpenseButton(modifier.padding(top = 50.dp) , navController = navController)
         Spacer(modifier.height(16.dp))
@@ -120,12 +120,15 @@ fun OverallDashboardMain(modifier: Modifier = Modifier , navController: NavContr
 }
 
 @Composable
-fun DashBoardSummary(modifier: Modifier = Modifier) {
+fun DashBoardSummary(modifier: Modifier = Modifier , viewModel: HistoryViewModel) {
+
+    val totalExpenses by viewModel.totalExpense.collectAsState()
+    val monthlyExpense by viewModel.monthExpense.collectAsState()
 
     val gridItems = listOf(
-        SummaryCards(image = R.drawable.calendar, title = "This Month", value = "10.00"),
+        SummaryCards(image = R.drawable.calendar, title = "This Month", value = monthlyExpense),
         SummaryCards(image = R.drawable.dollar, title = "This Week", value = "0.00"),
-        SummaryCards(image = R.drawable.grossprofit, title = "Total Expenses", value = "9"),
+        SummaryCards(image = R.drawable.grossprofit, title = "Total Expenses", value = totalExpenses),
         SummaryCards(image = R.drawable.loss, title = "Avg per Day", value = "0.32")
     )
     LazyVerticalGrid(
@@ -180,7 +183,9 @@ fun DashboardSummaryContent(
 }
 
 @Composable
-fun DashboardOverview(modifier: Modifier = Modifier) {
+fun DashboardOverview(modifier: Modifier = Modifier , viewModel: HistoryViewModel) {
+
+    val totalAmount by viewModel.overallExpense.collectAsState()
 
     val overviewText = buildAnnotatedString {
         withStyle(
@@ -190,16 +195,16 @@ fun DashboardOverview(modifier: Modifier = Modifier) {
                 color = greenPrimary
             )
         ) {
-            append("$0.00 ")
+            append(totalAmount)
         }
         withStyle(SpanStyle(fontWeight = FontWeight.Normal, color = Color.Black)) {
-            append("spent today")
+            append("spent overall")
         }
     }
 
 
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("Today's Overivew", fontWeight = FontWeight.ExtraBold, fontSize = 24.sp)
+        Text("Expense Overview", fontWeight = FontWeight.ExtraBold, fontSize = 24.sp)
         Spacer(modifier.height(10.dp))
         Card(
             modifier.size(200.dp, 50.dp),

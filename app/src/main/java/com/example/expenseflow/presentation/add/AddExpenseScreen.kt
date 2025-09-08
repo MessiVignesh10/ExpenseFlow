@@ -272,7 +272,7 @@ fun DescriptionSection(modifier: Modifier = Modifier, viewmodel: AddScreenViewmo
                 .fillMaxWidth()
                 .padding(10.dp)
         ) {
-            Text("Description (Optional)", fontWeight = FontWeight.Medium, fontSize = 16.sp)
+            Text("Description", fontWeight = FontWeight.Medium, fontSize = 16.sp)
         }
         BasicTextField(
             value = description,
@@ -281,6 +281,7 @@ fun DescriptionSection(modifier: Modifier = Modifier, viewmodel: AddScreenViewmo
                 .padding(top = 10.dp, start = 30.dp)
                 .fillMaxWidth()
                 .size(width = 300.dp, height = 100.dp),
+            singleLine = true,
             decorationBox = { innerTextField ->
                 if (description.isBlank()) {
                     AnimatedVisibility(

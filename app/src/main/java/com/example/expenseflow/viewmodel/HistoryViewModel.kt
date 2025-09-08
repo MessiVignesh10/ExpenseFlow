@@ -2,11 +2,14 @@ package com.example.expenseflow.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.expenseflow.core.utils.localDate
 import com.example.expenseflow.data.model.Expense
 import com.example.expenseflow.data.repository.TransactionsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.time.YearMonth
+import kotlin.math.exp
 
 sealed class HistoryState() {
     object Loading : HistoryState()
@@ -36,6 +39,14 @@ class HistoryViewModel : ViewModel() {
     private val _selectedSort = MutableStateFlow("None")
     val selectedSort : StateFlow<String> = _selectedSort
 
+    private val _totalExpense = MutableStateFlow("0")
+    val totalExpense : StateFlow<String> = _totalExpense
+
+    private val _overallExpense = MutableStateFlow<String>("")
+    val overallExpense : StateFlow<String> = _overallExpense
+
+    private val _monthExpense = MutableStateFlow<String>("")
+    val monthExpense : StateFlow<String> = _monthExpense
 
     init {
         loadExpenses()
@@ -46,6 +57,7 @@ class HistoryViewModel : ViewModel() {
             try {
                 val expenses = repository.getExpenses()
                 _uiState.value = HistoryState.Success(expenses)
+                expenseOverview(expenses = expenses)
             } catch (e: Exception) {
                 _uiState.value = HistoryState.Error(e.localizedMessage ?: "Something Went Wrong")
             }
@@ -62,6 +74,19 @@ class HistoryViewModel : ViewModel() {
 
     fun onSortChange(input : String){
         _selectedSort.value = input
+    }
+
+    private fun expenseOverview(expenses: List<Expense>){
+        expenses.forEach { expense ->
+            _totalExpense.value = expenses.size.toString()
+            val sum = expenses.sumOf { it.amount }
+            _overallExpense.value = sum.toFloat().toString()
+
+            val nowYM = YearMonth.now()
+            val monthSum = expenses.asSequence().filter { YearMonth.from(it.localDate()) == nowYM }.sumOf { it.amount }
+
+            _monthExpense.value = monthSum.toFloat().toString()
+        }
     }
 }
 
