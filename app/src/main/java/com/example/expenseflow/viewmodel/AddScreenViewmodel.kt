@@ -36,8 +36,8 @@ class AddScreenViewmodel : ViewModel() {
     private val _date = MutableStateFlow<String>("")
     val date: StateFlow<String> = _date
 
-    private val _selectedCategory = MutableStateFlow<String?>(null)
-    val selectedCategory: StateFlow<String?> = _selectedCategory
+    private val _selectedCategory = MutableStateFlow<Category?>(null)
+    val selectedCategory: StateFlow<Category?> = _selectedCategory
 
     private val _selectedPaymentMethod = MutableStateFlow<String?>(null)
     val selectedPaymentMethod: StateFlow<String?> = _selectedPaymentMethod
@@ -64,8 +64,8 @@ class AddScreenViewmodel : ViewModel() {
         validate()
     }
 
-    fun onCategorySelection(input: String) {
-        _selectedCategory.value = input.lowercase()
+    fun onCategorySelection(input: Category) {
+        _selectedCategory.value = input
         validate()
         println(input)
 
@@ -85,7 +85,7 @@ class AddScreenViewmodel : ViewModel() {
                     id = "",
                     description = description.value,
                     amount = amount.value.toDouble(),
-                    category = Category.fromLabel(selectedCategory.value ?: "Other"),
+                    category = selectedCategory.value ?: Category.OTHER,
                     date = date.value,
                     paymentMethod = PaymentMethod.fromLabel(selectedPaymentMethod.value ?: "Cash")
                 )

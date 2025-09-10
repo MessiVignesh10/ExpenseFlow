@@ -75,13 +75,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.expenseflow.R
+import com.example.expenseflow.data.model.Category
 import com.example.expenseflow.presentation.navigation.NavState
 import com.example.expenseflow.ui.theme.greenPrimary
 import com.example.expenseflow.viewmodel.AddScreenViewmodel
-
-data class Categories(
-    val picture: Int, val categoryName: String
-)
 
 data class PaymentItems(
     val paymentIcon: Painter, val paymentName: String
@@ -363,18 +360,7 @@ fun DateSection(modifier: Modifier = Modifier, viewmodel: AddScreenViewmodel = v
 @Composable
 fun CategorySection(modifier: Modifier = Modifier, viewmodel: AddScreenViewmodel = viewModel()) {
 
-    val categories = listOf(
-        Categories(picture = R.drawable.cutlery, categoryName = "Food"),
-        Categories(picture = R.drawable.sportcar, categoryName = "Transport"),
-        Categories(picture = R.drawable.gamecontroller, categoryName = "Fun"),
-        Categories(picture = R.drawable.onlineshopping, categoryName = "Shopping"),
-        Categories(picture = R.drawable.healthcare, categoryName = "Health"),
-        Categories(picture = R.drawable.bolt, categoryName = "Bills"),
-        Categories(picture = R.drawable.graduation, categoryName = "Education"),
-        Categories(picture = R.drawable.plane, categoryName = "Travel"),
-        Categories(picture = R.drawable.threedots, categoryName = "Other"),
-    )
-
+    val categories = remember { Category.entries }
 
     val selectedCategory by viewmodel.selectedCategory.collectAsState()
 
@@ -395,17 +381,17 @@ fun CategorySection(modifier: Modifier = Modifier, viewmodel: AddScreenViewmodel
                 .size(width = 400.dp, height = 380.dp)
         ) {
             items(categories) { item ->
-                val isSelected = selectedCategory == item.categoryName.lowercase()
+                val isSelected = selectedCategory == item
                 Card(
                     modifier
                         .padding(10.dp)
-                        .clickable(onClick = { viewmodel.onCategorySelection(item.categoryName) }),
+                        .clickable(onClick = { viewmodel.onCategorySelection(item) }),
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(containerColor = if (isSelected) greenPrimary else Color.White)
                 ) {
                     CategorySectionContent(
-                        picture = item.picture,
-                        categoryName = item.categoryName,
+                        picture = item.icon,
+                        categoryName = item.name,
                         isSelected = isSelected
                     )
                 }

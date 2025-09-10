@@ -1,6 +1,7 @@
 package com.example.expenseflow.presentation.history
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -137,7 +139,8 @@ fun SortSection(modifier: Modifier = Modifier, viewModel: HistoryViewModel = vie
                 DropdownMenuItem(
                     text = { Text(sortOption) },
                     onClick = { viewModel.onSortChange(input = sortOption); expanded = false },
-                    modifier.background(color = Color.White))
+                    modifier.background(color = Color.White)
+                )
 
             }
         }
@@ -265,8 +268,15 @@ fun DetailedHistory(modifier: Modifier = Modifier, viewModel: HistoryViewModel =
                         qOk && cOk
                     }
                 }
+                val sorted = remember(filtered , selectedSort) {
+                    when(selectedSort){
+                        "Date" -> filtered.sortedByDescending { it.date }
+                        "Amount" -> filtered.sortedByDescending { it.amount }
+                        else -> filtered
+                    }
+                }
 
-                if (filtered.isEmpty()) {
+                if (sorted.isEmpty()) {
                     Text(
                         "No expense Match your search",
                         color = Color.Gray,
@@ -274,7 +284,7 @@ fun DetailedHistory(modifier: Modifier = Modifier, viewModel: HistoryViewModel =
                     )
                 } else {
                     LazyColumn {
-                        items(filtered) { expense ->
+                        items(sorted) { expense ->
                             Column(
                                 modifier
                                     .fillMaxWidth()
@@ -327,6 +337,12 @@ fun ExpenseRowOnHistoryPage(expense: Expense, modifier: Modifier = Modifier) {
             .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        Image(
+            painter = painterResource(expense.category.icon),
+            contentDescription = expense.category.name,
+            modifier.size(40.dp)
+        )
+        Spacer(modifier.width(20.dp))
         Column {
             Text(
                 expense.description,
@@ -349,11 +365,13 @@ fun ExpenseRowOnHistoryPage(expense: Expense, modifier: Modifier = Modifier) {
                 Text(paymentName, color = greenPrimary, fontSize = 12.sp)
             }
         }
-        Text(
-            text = "$" + "%.2f".format(expense.amount),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
-        )
+        Row(modifier.fillMaxWidth() , horizontalArrangement = Arrangement.End){
+            Text(
+                text = "$" + "%.2f".format(expense.amount),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 

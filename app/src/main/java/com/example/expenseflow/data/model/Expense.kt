@@ -1,18 +1,21 @@
 package com.example.expenseflow.data.model
 
-enum class Category(val label : String) {
-    FOOD("food"),
-    TRANSPORT("transport"),
-    FUN("fun"),
-    SHOPPING("shopping"),
-    HEALTH("health"),
-    BILLS("bills"),
-    EDUCATION("education"),
-    TRAVEL("travel"),
-    OTHER("other");
+import androidx.annotation.DrawableRes
+import com.example.expenseflow.R
+
+enum class Category(val label : String , @DrawableRes val icon : Int) {
+    FOOD("food", R.drawable.cutlery),
+    TRANSPORT("transport",R.drawable.sportcar),
+    FUN("fun",R.drawable.gamecontroller),
+    SHOPPING("shopping",R.drawable.onlineshopping),
+    HEALTH("health",R.drawable.healthcare),
+    BILLS("bills",R.drawable.bolt),
+    EDUCATION("education",R.drawable.graduation),
+    TRAVEL("travel",R.drawable.plane),
+    OTHER("other",R.drawable.threedots);
 
     companion object{
-        fun fromLabel(label: String) : Category{
+        fun fromLabel(label: String, icon: Int) : Category{
             return entries.find {it.label == label }?:OTHER
         }
 

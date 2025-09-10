@@ -72,8 +72,6 @@ import com.example.expenseflow.viewmodel.HistoryState
 import com.example.expenseflow.viewmodel.HistoryViewModel
 
 
-
-
 data class SummaryCards(
     val image: Int,
     val title: String,
@@ -82,7 +80,11 @@ data class SummaryCards(
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UnrememberedMutableState")
 @Composable
-fun DashboardScreen(modifier: Modifier = Modifier, navController: NavController , viewModel: HistoryViewModel = viewModel()) {
+fun DashboardScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    viewModel: HistoryViewModel = viewModel()
+) {
 
     LaunchedEffect(Unit) {
         navController.currentBackStackEntry
@@ -94,13 +96,17 @@ fun DashboardScreen(modifier: Modifier = Modifier, navController: NavController 
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.verticalScroll(rememberScrollState())
     ) {
-        OverallDashboardMain(navController = navController , viewModel = viewModel)
+        OverallDashboardMain(navController = navController, viewModel = viewModel)
     }
 }
 
 
 @Composable
-fun OverallDashboardMain(modifier: Modifier = Modifier , navController: NavController , viewModel: HistoryViewModel) {
+fun OverallDashboardMain(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    viewModel: HistoryViewModel
+) {
     Column(
         modifier
             .fillMaxWidth()
@@ -111,7 +117,7 @@ fun OverallDashboardMain(modifier: Modifier = Modifier , navController: NavContr
         Spacer(modifier.height(16.dp))
         DashBoardSummary(viewModel = viewModel)
         Spacer(modifier.height(16.dp))
-        AddNewExpenseButton(modifier.padding(top = 50.dp) , navController = navController)
+        AddNewExpenseButton(modifier.padding(top = 50.dp), navController = navController)
         Spacer(modifier.height(16.dp))
         SampleHistory(navController = navController)
         Spacer(modifier.height(16.dp))
@@ -120,7 +126,7 @@ fun OverallDashboardMain(modifier: Modifier = Modifier , navController: NavContr
 }
 
 @Composable
-fun DashBoardSummary(modifier: Modifier = Modifier , viewModel: HistoryViewModel) {
+fun DashBoardSummary(modifier: Modifier = Modifier, viewModel: HistoryViewModel) {
 
     val totalExpenses by viewModel.totalExpense.collectAsState()
     val monthlyExpense by viewModel.monthExpense.collectAsState()
@@ -128,7 +134,11 @@ fun DashBoardSummary(modifier: Modifier = Modifier , viewModel: HistoryViewModel
     val gridItems = listOf(
         SummaryCards(image = R.drawable.calendar, title = "This Month", value = monthlyExpense),
         SummaryCards(image = R.drawable.dollar, title = "This Week", value = "0.00"),
-        SummaryCards(image = R.drawable.grossprofit, title = "Total Expenses", value = totalExpenses),
+        SummaryCards(
+            image = R.drawable.grossprofit,
+            title = "Total Expenses",
+            value = totalExpenses
+        ),
         SummaryCards(image = R.drawable.loss, title = "Avg per Day", value = "0.32")
     )
     LazyVerticalGrid(
@@ -183,7 +193,7 @@ fun DashboardSummaryContent(
 }
 
 @Composable
-fun DashboardOverview(modifier: Modifier = Modifier , viewModel: HistoryViewModel) {
+fun DashboardOverview(modifier: Modifier = Modifier, viewModel: HistoryViewModel) {
 
     val totalAmount by viewModel.overallExpense.collectAsState()
 
@@ -301,9 +311,9 @@ fun AnalyticsOnDashboard(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun AddNewExpenseButton(modifier: Modifier = Modifier,navController: NavController) {
+fun AddNewExpenseButton(modifier: Modifier = Modifier, navController: NavController) {
     Button(
-        onClick = {navController.navigate(NavState.AddExpenseScreen.route)},
+        onClick = { navController.navigate(NavState.AddExpenseScreen.route) },
         modifier = Modifier
             .padding(top = 20.dp)
             .size(height = 50.dp, width = 200.dp),
@@ -366,9 +376,11 @@ fun SampleHistory(
                     Column(Modifier.fillMaxWidth()) {
                         ExpenseDetailRow(navController = navController)
                         // Replace LazyColumn with a simple Column so content just grows
-                        Column(Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp)) {
+                        Column(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                        ) {
                             s.expenses.forEach { expense ->
                                 ExpenseRow(expense)
                             }
@@ -382,7 +394,7 @@ fun SampleHistory(
 
 
 @Composable
-fun ExpenseDetailRow(modifier: Modifier = Modifier , navController: NavController) {
+fun ExpenseDetailRow(modifier: Modifier = Modifier, navController: NavController) {
     Row(
         modifier
             .fillMaxWidth()
@@ -396,7 +408,7 @@ fun ExpenseDetailRow(modifier: Modifier = Modifier , navController: NavControlle
             fontWeight = FontWeight.Bold,
             color = greenPrimary,
             fontSize = 20.sp,
-            modifier = Modifier.clickable(onClick = {navController.navigate(NavState.HistoryScreen.route)})
+            modifier = Modifier.clickable(onClick = { navController.navigate(NavState.HistoryScreen.route) })
         )
     }
 }
@@ -407,9 +419,13 @@ fun ExpenseRow(expense: Expense) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column {
+        verticalAlignment = Alignment.CenterVertically) {
+        Image(
+            painter = painterResource(expense.category.icon),
+            contentDescription = expense.category.name, modifier = Modifier.size(40.dp)
+        )
+        Spacer(modifier = Modifier.width(20.dp))
+        Column{
             Text(
                 expense.description,
                 style = MaterialTheme.typography.titleMedium,
@@ -417,11 +433,13 @@ fun ExpenseRow(expense: Expense) {
             )
             Text(expense.date, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
         }
-        Text(
-            text = "$" + "%.2f".format(expense.amount),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
-        )
+        Row(modifier = Modifier.fillMaxWidth().padding(end = 20.dp), horizontalArrangement = Arrangement.End){
+            Text(
+                text = "$" + "%.2f".format(expense.amount),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+        }
     }
 }
 
