@@ -26,6 +26,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.expenseflow.R
 import com.example.expenseflow.presentation.add.AddExpenseScreen
+import com.example.expenseflow.presentation.analytics.AnalyticsScreen
 import com.example.expenseflow.presentation.dashboard.DashboardScreen
 import com.example.expenseflow.presentation.history.HistoryScreen
 import com.example.expenseflow.ui.theme.greenPrimary
@@ -54,7 +55,7 @@ fun AppNavScreen(modifier: Modifier = Modifier, navController: NavHostController
             BottomNavItem(
                 painterResource(id = R.drawable.analysis),
                 "Analysis",
-                NavState.AddExpenseScreen.route
+                NavState.AnalyticsScreen.route
             ),
             BottomNavItem(
                 painterResource(id = R.drawable.history),
@@ -110,6 +111,9 @@ fun AppNavScreen(modifier: Modifier = Modifier, navController: NavHostController
             }
             composable(NavState.HistoryScreen.route) {
                 HistoryScreen()
+            }
+            composable(NavState.AnalyticsScreen.route){
+                AnalyticsScreen()
             }
         }
     }
