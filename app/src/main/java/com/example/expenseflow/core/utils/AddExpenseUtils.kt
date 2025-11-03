@@ -14,6 +14,6 @@ fun formattedDescription(input : String):String{
 fun dateFormatter(input : Long) : String{
     val zoneId = ZoneId.systemDefault()
     val localDate = Instant.ofEpochMilli(input).atZone(zoneId).toLocalDate()
-    val formatter = DateTimeFormatter.ofPattern("MMM d ,yyyy", Locale.getDefault())
+    val formatter = DateTimeFormatter.ofPattern("MMM d ,yyyy", Locale.ENGLISH)
     return localDate.format(formatter)
 }

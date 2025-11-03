@@ -15,7 +15,7 @@ enum class Category(val label : String , @DrawableRes val icon : Int) {
     OTHER("other",R.drawable.threedots);
 
     companion object{
-        fun fromLabel(label: String, icon: Int) : Category{
+        fun fromLabel(label: String) : Category{
             return entries.find {it.label == label }?:OTHER
         }
 

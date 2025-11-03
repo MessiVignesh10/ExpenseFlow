@@ -70,6 +70,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
-    implementation("io.github.ehsannarmani:compose-charts:0.1.11")
+
+    implementation("co.yml:ycharts:2.1.0")
 
 }
