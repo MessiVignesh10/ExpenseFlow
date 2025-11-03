@@ -1,82 +1,94 @@
 package com.example.expenseflow.viewmodel
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import co.yml.charts.common.model.Point
 import com.example.expenseflow.data.model.Expense
 import com.example.expenseflow.data.repository.TransactionsRepository
+import ir.ehsannarmani.compose_charts.models.Pie
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import kotlin.math.abs
+import kotlin.math.exp
 
-sealed class AnalyticsUi() {
-
+sealed class AnalyticsUi(){
     object Idle : AnalyticsUi()
     object Loading : AnalyticsUi()
-    data class Success(val expense: List<Expense>) : AnalyticsUi()
-    data class Error(val message: String) : AnalyticsUi()
+    data class Success (val expense: List<Expense>) : AnalyticsUi()
+    data class Error (val message : String) : AnalyticsUi()
 }
 
-class AnalyticsViewModel : ViewModel() {
+
+
+class AnalyticsViewModel : ViewModel(){
 
     private val repository = TransactionsRepository()
+
     private val _uiState = MutableStateFlow<AnalyticsUi>(AnalyticsUi.Idle)
-    val uiState: StateFlow<AnalyticsUi> = _uiState
+    val uiState : StateFlow<AnalyticsUi> = _uiState
 
-    private val _chartPoints = MutableStateFlow<List<Point>>(emptyList())
-    val chartPoints: StateFlow<List<Point>> = _chartPoints
-
-    private val _xLabels = MutableStateFlow<List<String>>(emptyList())
-    val xLabel: StateFlow<List<String>> = _xLabels
-
-
-    private val dateFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy", java.util.Locale.ENGLISH)
+    private val _pieData = MutableStateFlow<List<Pie>>(emptyList())
+    val pieDate : StateFlow<List<Pie>> = _pieData
 
     init {
-        loadExpense()
+        expenseData()
     }
 
-    fun loadExpense() {
+    fun expenseData(){
         viewModelScope.launch {
             _uiState.value = AnalyticsUi.Loading
             try {
                 val expenses = repository.getExpenses()
                 _uiState.value = AnalyticsUi.Success(expenses)
-                mapToChart(expenses)
-            } catch (e: Exception) {
-                _uiState.value =
-                    AnalyticsUi.Error(message = e.localizedMessage ?: "Something Went Wrong")
+                computePie(expense = expenses)
+            } catch (e : Exception){
+                _uiState.value = AnalyticsUi.Error(e.localizedMessage ?: "Something Went Wrong")
             }
         }
     }
 
-    private fun mapToChart(expense: List<Expense>){
-        if (expense.isEmpty()){
-            _chartPoints.value = emptyList()
-            _xLabels.value = emptyList()
+
+    private fun computePie(expense: List<Expense>){
+
+        if (expense.isEmpty()) {
+            _pieData.value = emptyList()
             return
         }
 
-        val sorted = expense.sortedBy { parseLocalDate(it.date)}
+        val totalByCategory : Map<String , Double> =
+            expense.groupBy { it.category.name }
+                .mapValues { (_,list) -> list.sumOf { abs(it.amount) }}
 
-        val labels = sorted.map { normalizeApiDate(it.date) }
+        val totalAll = totalByCategory.values.sum()
 
-        val points = sorted.mapIndexed {idx,expense ->
-            Point(x = idx.toFloat() , y = expense.amount.toFloat())
+        if (totalAll <= 0.0){
+            _pieData.value = emptyList()
+            return
         }
 
-        _xLabels.value = labels
-        _chartPoints.value = points
+        val pallette = defaultPallette()
+
+        val pies = totalByCategory.entries
+            .sortedByDescending { it.value }
+            .mapIndexed { index, (name , total) ->
+                val ptc = (total/totalAll)*100.0
+                val color = pallette[index % pallette.size]
+                Pie(label = name , data = total , color = color , selectedColor = color , selected = false)
+            }
+        _pieData.value = pies
+
     }
 
-    private fun normalizeApiDate(raw: String) : String {
-        return  raw.replace("\\s*,\\s*".toRegex(), ", ").replace("\\s+".toRegex(), " ").trim()
-    }
-
-    private fun parseLocalDate(raw : String) : LocalDate{
-       return LocalDate.parse(normalizeApiDate(raw),dateFormatter)
-    }
-
+    private fun defaultPallette() = listOf(
+        Color(0xFF3B82F6), // blue
+        Color(0xFF10B981), // green
+        Color(0xFFF59E0B), // amber
+        Color(0xFF8B5CF6), // violet
+        Color(0xFFEF4444), // red
+        Color(0xFF06B6D4), // cyan
+        Color(0xFF84CC16), // lime
+        Color(0xFFEC4899), // pink
+        Color(0xFF6B7280)  // gray
+    )
 }
