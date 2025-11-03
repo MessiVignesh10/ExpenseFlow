@@ -72,7 +72,7 @@ class AnalyticsViewModel : ViewModel() {
     }
 
     private fun normalizeApiDate(raw: String) : String {
-        return  raw.replace("\s*,\s*".toRegex(), ", ").replace("\s+".toRegex(), " ").trim()
+        return  raw.replace("\\s*,\\s*".toRegex(), ", ").replace("\\s+".toRegex(), " ").trim()
     }
 
     private fun parseLocalDate(raw : String) : LocalDate{
