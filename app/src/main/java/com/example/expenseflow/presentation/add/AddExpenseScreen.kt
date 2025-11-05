@@ -1,18 +1,13 @@
 package com.example.expenseflow.presentation.add
 
 import android.annotation.SuppressLint
-import android.graphics.drawable.Icon
-import android.media.Image
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,8 +28,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -47,7 +41,6 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -64,7 +57,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -87,7 +79,7 @@ data class PaymentItems(
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AddExpenseScreen(modifier: Modifier = Modifier , navController: NavController) {
+fun AddExpenseScreen(modifier: Modifier = Modifier, navController: NavController) {
 
 
     Scaffold(topBar = {
@@ -120,9 +112,9 @@ fun AddExpenseScreen(modifier: Modifier = Modifier , navController: NavControlle
                     verticalArrangement = Arrangement.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = null,
-                        modifier.size(20.dp).clickable(onClick = {navController.navigate(NavState.DashBoardScreen.route)})
+                        modifier.size(20.dp).clickable(onClick = { navController.navigate(NavState.DashBoardScreen.route) })
                     )
                 }
             }
@@ -140,7 +132,7 @@ fun AddExpenseScreen(modifier: Modifier = Modifier , navController: NavControlle
 }
 
 @Composable
-fun OverallAddScreen(modifier: Modifier = Modifier , navController: NavController) {
+fun OverallAddScreen(modifier: Modifier = Modifier, navController: NavController) {
     Column(
         modifier
             .fillMaxWidth()
@@ -347,7 +339,7 @@ fun DateSection(modifier: Modifier = Modifier, viewmodel: AddScreenViewmodel = v
                 ),
                 trailingIcon = {
                     Icon(
-                        Icons.Default.DateRange,
+                        Icons.Filled.DateRange,
                         contentDescription = null,
                         modifier.clickable { showDatePicker = true })
                 },

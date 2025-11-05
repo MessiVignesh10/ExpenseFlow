@@ -1,7 +1,6 @@
 package com.example.expenseflow.presentation.navigation
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.BottomAppBar
@@ -11,11 +10,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
@@ -24,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.expenseflow.R
 import com.example.expenseflow.presentation.add.AddExpenseScreen
 import com.example.expenseflow.presentation.analytics.AnalyticsScreen
@@ -63,13 +59,12 @@ fun AppNavScreen(modifier: Modifier = Modifier, navController: NavHostController
                 NavState.HistoryScreen.route
             )
         )
-    val currentDestination =
-        navController.currentBackStackEntryFlow.collectAsState(initial = navController.currentBackStackEntry).value?.destination
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
 
 
-    Scaffold(modifier.fillMaxSize(), bottomBar = {
+    Scaffold(modifier = modifier.fillMaxSize(), bottomBar = {
         BottomAppBar(
-            modifier.fillMaxWidth(),
             containerColor = Color.White,
         ) {
             bottomNavItems.forEach { item ->
@@ -77,22 +72,27 @@ fun AppNavScreen(modifier: Modifier = Modifier, navController: NavHostController
                 NavigationBarItem(
                     selected = selected,
                     onClick = {
-                        navController.navigate(item.route){
-                            popUpTo(navController.graph.startDestinationId){
+                        navController.navigate(item.route) {
+                            popUpTo(navController.graph.startDestinationId) {
                                 saveState = true
                             }
                             launchSingleTop = true
                             restoreState = true
                         }
                     },
-                    icon = { Icon(painter = item.icon, contentDescription = item.label) },
+                    icon = {
+                        Icon(
+                            painter = item.icon,
+                            contentDescription = item.label,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    },
                     label = { Text(item.label) },
-                    alwaysShowLabel = true,
-                    modifier = Modifier.size(30.dp),
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.White,
-                        unselectedTextColor = Color.White,
-                        indicatorColor = greenPrimary
+                        selectedIconColor = greenPrimary,
+                        unselectedIconColor = Color.Gray,
+                        unselectedTextColor = Color.Gray,
+                        indicatorColor = Color.Transparent
                     )
                 )
             }
@@ -101,7 +101,7 @@ fun AppNavScreen(modifier: Modifier = Modifier, navController: NavHostController
         NavHost(
             navController = navController,
             startDestination = NavState.DashBoardScreen.route,
-            modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding)
         ) {
             composable(NavState.DashBoardScreen.route) {
                 DashboardScreen(navController = navController)
@@ -112,7 +112,7 @@ fun AppNavScreen(modifier: Modifier = Modifier, navController: NavHostController
             composable(NavState.HistoryScreen.route) {
                 HistoryScreen()
             }
-            composable(NavState.AnalyticsScreen.route){
+            composable(NavState.AnalyticsScreen.route) {
                 AnalyticsScreen()
             }
         }

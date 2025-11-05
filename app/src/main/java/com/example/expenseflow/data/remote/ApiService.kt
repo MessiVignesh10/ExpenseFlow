@@ -1,6 +1,5 @@
 package com.example.expenseflow.data.remote
 
-import com.example.expenseflow.data.model.Expense
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -14,6 +13,5 @@ interface ApiService {
     ): List<ExpenseDto>
 
     @POST("expenses")
-    suspend fun addExpense(@Body expense: ExpenseDto) : ExpenseDto
-
+    suspend fun addExpense(@Body expense: ExpenseDto): ExpenseDto
 }

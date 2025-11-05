@@ -28,11 +28,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "1.8"
     }
     buildFeatures {
         compose = true
@@ -49,6 +49,11 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.androidx.material.icons)
+    implementation(libs.ycharts)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -57,19 +62,5 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation("com.squareup.retrofit2:retrofit:3.0.0")
-
-    // https://mvnrepository.com/artifact/com.squareup.retrofit2/converter-gson
-    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
-
-    dependencies {
-        implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
-        implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
-    }
-
-    implementation("androidx.navigation:navigation-compose:2.7.7")
-
-    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
-    implementation("io.github.ehsannarmani:compose-charts:0.1.11")
-
+    implementation(libs.ycharts)
 }
