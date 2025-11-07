@@ -1,11 +1,14 @@
 package com.example.expenseflow.presentation.analytics
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.CircularProgressIndicator
@@ -16,7 +19,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import co.yml.charts.axis.AxisData
@@ -30,102 +39,42 @@ import com.example.expenseflow.viewmodel.AnalyticsViewModel
 
 @Composable
 fun AnalyticsScreen(modifier: Modifier = Modifier) {
-    BarChart()
+    CustomBarChart()
 }
 
 @Composable
-fun BarChart(modifier: Modifier = Modifier, viewModel: AnalyticsViewModel = viewModel()) {
+fun CustomBarChart(modifier: Modifier = Modifier, viewModel: AnalyticsViewModel = viewModel()) {
+    val data = listOf(100f, 80f, 150f, 180f)
+    val labels = listOf("June", "Jul", "Aug", "Sep")
 
-    val uiState by viewModel.uiState.collectAsState()
-    val chartPoints by viewModel.chartPoints.collectAsState()
-    val xLabels by viewModel.xLabel.collectAsState()
+    Canvas(modifier = Modifier.size(300.dp)) {
+        val barWidth = 40f
+        val spaceBetween = 40f
+        var currentX = 30f
 
-    LaunchedEffect(Unit) {
-        viewModel.loadExpenses()
-    }
-
-    when (uiState) {
-        is AnalyticsUiState.Loading -> {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        }
-
-        is AnalyticsUiState.Error -> {
-            Text(
-                text = (uiState as AnalyticsUiState.Error).message,
-                modifier = Modifier.padding(16.dp)
+        data.forEachIndexed { idx, d ->
+            val barHeight = d
+            drawRect(
+                color = Color.Green,
+                topLeft = Offset(currentX, size.height - 50f - barHeight),
+                size = Size(barWidth, barHeight)
             )
+            drawContext.canvas.nativeCanvas.drawText(
+                labels[idx],
+                currentX,
+                size.height - 20f, // bottom
+                android.graphics.Paint().apply {
+                    color = android.graphics.Color.BLACK
+                    textSize = 24f
+                }
+            )
+            currentX += barWidth + spaceBetween
         }
-
-        is AnalyticsUiState.Success -> {
-            BarChartSection(points = chartPoints, xLabels = xLabels)
-        }
-
-        else -> Unit
     }
-
 }
 
+@Preview
 @Composable
-fun BarChartSection(points: List<Point>, xLabels: List<String>) {
-    if (points.isEmpty()) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("No Expense Date Available")
-        }
-        return
-    }
-
-    val xAxisData = AxisData.Builder()
-        .axisStepSize(40.dp)
-        .startPadding(16.dp)
-        .labelData { i ->
-            xLabels.getOrNull(i).orEmpty()
-        }
-        .axisLabelAngle(45f)
-        .build()
-
-    val maxY = points.maxOf { it.y }
-    val steps = 5
-
-    val yAxisDate = AxisData.Builder()
-        .labelData { i ->
-            val value = (maxY/steps)*i
-            value.toInt().toString()
-        }
-        .steps(steps)
-        .startDrawPadding(50.dp)
-        .build()
-
-    val bars = points.map { point ->
-        BarData(
-            point = point, color = Color.Green, gradientColorList = listOf(
-                Color.Blue, Color.Black,
-                Color.Red
-            )
-        )
-    }
-
-    val barChartData = BarChartData(
-        chartData = bars,
-        xAxisData = xAxisData,
-        yAxisData = yAxisDate,
-        backgroundColor = Color.White,
-        showXAxis = true,
-        showYAxis = false, barChartType = BarChartType.VERTICAL,
-    )
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp)
-    ) {
-        BarChart(
-            modifier = Modifier
-                .width((points.size * 56).dp)
-                .height(300.dp),
-            barChartData = barChartData
-        )
-    }
+private fun pri() {
+    AnalyticsScreen()
 }
