@@ -78,7 +78,7 @@ fun OverallScreenModules(modifier: Modifier = Modifier, viewModel: AnalyticsView
     Column {
         HeadingSection()
         Spacer(modifier.height(20.dp))
-        TriToggle(selectedIndex = selectedRange, onSelected = { viewModel.updateSelectedRange(it) })
+        TriToggle(selectedIndex = selectedRange, onSelected = { viewModel.selectedRange(it) })
         Spacer(modifier.height(20.dp))
         TriCards(viewModel = viewModel)
         Spacer(modifier.height(20.dp))
