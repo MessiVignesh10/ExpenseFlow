@@ -133,8 +133,7 @@ class AnalyticsViewModel : ViewModel() {
         val currentLocalDate = LocalDate.now()
         val currentMonth = currentLocalDate.month
         val currentYear = currentLocalDate.year
-        val threeMonths = currentMonth.minus(3)
-        val oneYear = currentMonth.minus(12)
+        val threeMonthsAgo = YearMonth.now().minusMonths(3)
 
         val filteredExpenseByMonth = expense.mapNotNull { expense ->
             try {
@@ -163,7 +162,7 @@ class AnalyticsViewModel : ViewModel() {
         val filteredExpenseBy3Month = expense.mapNotNull { expense ->
             try {
                 val date = LocalDate.parse(expense.date, dateFormatterPattern)
-                if (date.month == threeMonths && date.year == currentYear) expense.amount
+                if (date.month == threeMonthsAgo.month && date.year == threeMonthsAgo.year) expense.amount
                 else null
             } catch (_: Exception) {
                 null
@@ -173,7 +172,7 @@ class AnalyticsViewModel : ViewModel() {
         val threeMonthExpense = expense.count { expense ->
             try {
                 val date = LocalDate.parse(expense.date, dateFormatterPattern)
-                date.month == threeMonths && date.year == currentYear
+                date.month == threeMonthsAgo.month && date.year == threeMonthsAgo.year
             } catch (_: Exception) {
                 false
             }
@@ -186,7 +185,7 @@ class AnalyticsViewModel : ViewModel() {
         val filteredExpenseByYear = expense.mapNotNull { expense ->
             try {
                 val date = LocalDate.parse(expense.date, dateFormatterPattern)
-                if (date.month == oneYear) expense.amount
+                if (date.year == currentYear) expense.amount
                 else null
             } catch (_: Exception) {
                 null
@@ -196,7 +195,7 @@ class AnalyticsViewModel : ViewModel() {
         val oneYearExpense = expense.count{expense ->
             try {
                 val date = LocalDate.parse(expense.date, dateFormatterPattern)
-                date.month == oneYear
+                date.year == currentYear
             } catch (_: Exception) {
                 false
             }
