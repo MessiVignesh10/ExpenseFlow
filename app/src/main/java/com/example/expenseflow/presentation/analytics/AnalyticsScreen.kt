@@ -97,28 +97,41 @@ fun DonutChart() {
 
     var startAnimation by remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) { startAnimation = true }
+
+    val sweep by animateFloatAsState(
+        targetValue = if (startAnimation) 360f else 0f,
+        animationSpec = tween(durationMillis = 3000, easing = FastOutSlowInEasing)
+    )
     val slices = listOf(
         0.4f to Color.Green,
         0.3f to Color.Blue,
         0.2f to Color.Red,
         0.1f to Color.Yellow
+    )
 
-    )
-    val sweep by animateFloatAsState(
-        targetValue = if (startAnimation) -360f else -90f,
-        animationSpec = tween(durationMillis = 3000, easing = FastOutSlowInEasing)
-    )
-    LaunchedEffect(Unit) { startAnimation = true }
     Canvas(modifier = Modifier.size(200.dp)) {
+
+
+        var startAngle = -90f
         val thickness = 80f
 
-        drawArc(
-            color = slices,
-            startAngle = -90f,
-            sweepAngle = sweep,
-            useCenter = false,
-            style = Stroke(width = thickness, cap = StrokeCap.Square)
-        )
+        slices.forEach { (f, color) ->
+
+            val fullsizeSweep = f * 360
+
+            val visibleSweep = (sweep - (startAngle + 90f)).coerceIn(0f ,fullsizeSweep)
+            drawArc(
+                color = color,
+                startAngle = startAngle,
+                sweepAngle = visibleSweep,
+                useCenter = false,
+                style = Stroke(width = thickness, cap = StrokeCap.Square)
+            )
+            startAngle += fullsizeSweep
+        }
+
+
     }
 }
 
