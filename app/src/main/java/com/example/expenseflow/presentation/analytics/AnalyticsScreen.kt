@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
@@ -43,6 +44,9 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.painter.Painter
@@ -82,7 +86,39 @@ fun OverallScreenModules(modifier: Modifier = Modifier, viewModel: AnalyticsView
         Spacer(modifier.height(20.dp))
         TriCards(viewModel = viewModel)
         Spacer(modifier.height(20.dp))
+        DonutChart()
+        Spacer(modifier.height(20.dp))
         BarchartSection()
+    }
+}
+
+@Composable
+fun DonutChart() {
+
+    var startAnimation by remember { mutableStateOf(false) }
+
+    val slices = listOf(
+        0.4f to Color.Green,
+        0.3f to Color.Blue,
+        0.2f to Color.Red,
+        0.1f to Color.Yellow
+
+    )
+    val sweep by animateFloatAsState(
+        targetValue = if (startAnimation) -360f else -90f,
+        animationSpec = tween(durationMillis = 3000, easing = FastOutSlowInEasing)
+    )
+    LaunchedEffect(Unit) { startAnimation = true }
+    Canvas(modifier = Modifier.size(200.dp)) {
+        val thickness = 80f
+
+        drawArc(
+            color = slices,
+            startAngle = -90f,
+            sweepAngle = sweep,
+            useCenter = false,
+            style = Stroke(width = thickness, cap = StrokeCap.Square)
+        )
     }
 }
 
@@ -115,7 +151,7 @@ fun TriCards(modifier: Modifier = Modifier, viewModel: AnalyticsViewModel) {
                 Spacer(modifier.height(8.dp))
                 Text("Total")
                 Spacer(modifier.height(10.dp))
-                Text("$$total", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
+                Text("$${total.toFloat()}", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
 
             }
         }
@@ -135,7 +171,7 @@ fun TriCards(modifier: Modifier = Modifier, viewModel: AnalyticsViewModel) {
                 Spacer(modifier.height(8.dp))
                 Text("Daily Avg")
                 Spacer(modifier.height(10.dp))
-                Text("$$average", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
+                Text("$${average.toFloat()}", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
 
             }
         }
