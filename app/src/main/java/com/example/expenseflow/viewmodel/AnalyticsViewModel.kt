@@ -1,7 +1,10 @@
 package com.example.expenseflow.viewmodel
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.expenseflow.data.model.Category
 import com.example.expenseflow.data.model.Expense
 import com.example.expenseflow.data.repository.TransactionsRepository
 import kotlinx.coroutines.flow.*
@@ -11,6 +14,13 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.exp
+
+
+data class DonutSlice(
+    val category: Category,
+    val amount: Float,
+    val color: Color
+)
 
 sealed class AnalyticsUiState {
     object Idle : AnalyticsUiState()
@@ -93,22 +103,22 @@ class AnalyticsViewModel : ViewModel() {
         }
     }
 
-    private fun parseDate(expenses: Expense): LocalDate ?{
+    private fun parseDate(expenses: Expense): LocalDate? {
         return try {
-            LocalDate.parse(expenses.date , formatter)
-        } catch (_: Exception){
+            LocalDate.parse(expenses.date, formatter)
+        } catch (_: Exception) {
             null
         }
     }
 
-    private fun filterByRange(expenses: List<Expense> , range : Int) : List<Expense>{
+    private fun filterByRange(expenses: List<Expense>, range: Int): List<Expense> {
         val currentDate = LocalDate.now()
         val threeMonthsAgo = currentDate.minusMonths(3)
 
         return expenses.filter { expense ->
             val date = parseDate(expenses = expense) ?: return@filter false
 
-            when(range){
+            when (range) {
                 0 -> date.month == currentDate.month && date.year == currentDate.year
                 1 -> !date.isBefore(threeMonthsAgo)
                 2 -> date.year == currentDate.year
@@ -117,28 +127,28 @@ class AnalyticsViewModel : ViewModel() {
         }
     }
 
-    private fun calculateTotals(expenses: List<Expense>): Pair<Double , Int>{
+    private fun calculateTotals(expenses: List<Expense>): Pair<Double, Int> {
         return expenses.sumOf { it.amount } to expenses.size
     }
 
-    private fun computeAnalysis(expenses: List<Expense>){
+    private fun computeAnalysis(expenses: List<Expense>) {
         val monthList = filterByRange(expenses = expenses, range = 0)
-        val (monthlyTotal , monthlyCount) = calculateTotals(expenses = monthList)
+        val (monthlyTotal, monthlyCount) = calculateTotals(expenses = monthList)
         _monthlyTotal.value = monthlyTotal
         _monthlyCount.value = monthlyCount
         _monthlyAverage.value = monthlyTotal / 30.0
 
-        val threeMonthList = filterByRange(expenses = expenses , range = 1)
+        val threeMonthList = filterByRange(expenses = expenses, range = 1)
         val (threeMonthsTotal, threeMonthsCount) = calculateTotals(threeMonthList)
         _threeMonthTotal.value = threeMonthsTotal
         _threeMonthCount.value = threeMonthsCount
         _threeMonthAverage.value = threeMonthsTotal / 92.0
 
-        val yearlyList = filterByRange(expenses = expenses , range = 2)
-        val (yearlyTotal , yearlyCount) = calculateTotals(expenses = yearlyList)
+        val yearlyList = filterByRange(expenses = expenses, range = 2)
+        val (yearlyTotal, yearlyCount) = calculateTotals(expenses = yearlyList)
         _yearlyTotal.value = yearlyTotal
         _yearlyCount.value = yearlyCount
-        _yearlyAverage.value = yearlyTotal/365.0
+        _yearlyAverage.value = yearlyTotal / 365.0
     }
 
     private fun computeChart(expenses: List<Expense>) {
@@ -161,7 +171,7 @@ class AnalyticsViewModel : ViewModel() {
         _xLabel.value = months.map { it.atDay(1).format(labelFormatter) }
     }
 
-    fun selectedRange(index: Int){
+    fun selectedRange(index: Int) {
         _selectedRange.value = index
         val expenses = (uiState.value as? AnalyticsUiState.Success)?.expenses ?: return
         computeAnalysis(expenses = expenses)
@@ -193,4 +203,81 @@ class AnalyticsViewModel : ViewModel() {
             else -> 0
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
+
+    val monthlySlice = uiState.map { state ->
+        if (state is AnalyticsUiState.Success)
+            getMonthlySlices(expenses = state.expenses)
+        else emptyList()
+    }.stateIn(viewModelScope , SharingStarted.Eagerly , initialValue = emptyList())
+
+    val threeMonthSlice = uiState.map { state ->
+        if (state is AnalyticsUiState.Success)
+            getThreeMonthSlices(expenses = state.expenses)
+        else emptyList()
+    }.stateIn(viewModelScope, SharingStarted.Eagerly,emptyList())
+
+    val yearlySlice = uiState.map { state ->
+        if (state is AnalyticsUiState.Success)
+            getYearlySlice(expenses = state.expenses)
+        else emptyList()
+    }.stateIn(viewModelScope, SharingStarted.Eagerly,emptyList())
+
+
+
+    fun getMonthlySlices(expenses: List<Expense>): List<DonutSlice> {
+
+        val monthList = filterByRange(expenses, 0)
+        return monthList
+            .groupBy { it.category }
+            .map { (category, items) ->
+                DonutSlice(
+                    category = category,
+                    items.sumOf { it.amount }.toFloat(),
+                    color = pickColorForCategory(category)
+                )
+            }
+    }
+
+    fun getThreeMonthSlices(expenses: List<Expense>): List<DonutSlice> {
+
+        val threeMonthsList = filterByRange(expenses, 1)
+
+        return threeMonthsList
+            .groupBy { it.category }
+            .map { (category, items) ->
+                DonutSlice(
+                    category = category,
+                    amount = items.sumOf { it.amount }.toFloat(),
+                    color = pickColorForCategory(category)
+                )
+            }
+    }
+    fun getYearlySlice(expenses: List<Expense>): List<DonutSlice> {
+
+        val yearlyList = filterByRange(expenses, 2)
+
+        return yearlyList
+            .groupBy { it.category }
+            .map { (category, items) ->
+                DonutSlice(
+                    category = category,
+                    amount = items.sumOf { it.amount }.toFloat(),
+                    color = pickColorForCategory(category)
+                )
+            }
+    }
+
+    private fun pickColorForCategory(category: Category): Color {
+        return when (category) {
+            Category.FOOD -> Color(0xFFE91E63)        // Pink
+            Category.TRANSPORT -> Color(0xFF3F51B5)   // Indigo
+            Category.FUN -> Color(0xFF9C27B0)         // Purple
+            Category.SHOPPING -> Color(0xFFFFC107)    // Amber
+            Category.HEALTH -> Color(0xFF4CAF50)      // Green
+            Category.BILLS -> Color(0xFFFF5722)       // Deep Orange
+            Category.EDUCATION -> Color(0xFF009688)   // Teal
+            Category.TRAVEL -> Color(0xFF03A9F4)      // Light Blue
+            Category.OTHER -> Color(0xFF9E9E9E)       // Grey
+        }
+    }
 }

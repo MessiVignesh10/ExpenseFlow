@@ -65,6 +65,8 @@ import co.yml.charts.ui.barchart.models.BarData
 import com.example.expenseflow.R
 import com.example.expenseflow.viewmodel.AnalyticsUiState
 import com.example.expenseflow.viewmodel.AnalyticsViewModel
+import com.example.expenseflow.viewmodel.DonutSlice
+import kotlin.collections.emptyList
 
 @Composable
 fun AnalyticsScreen(modifier: Modifier = Modifier, viewModel: AnalyticsViewModel = viewModel()) {
@@ -79,6 +81,13 @@ fun AnalyticsScreen(modifier: Modifier = Modifier, viewModel: AnalyticsViewModel
 fun OverallScreenModules(modifier: Modifier = Modifier, viewModel: AnalyticsViewModel) {
 
     val selectedRange by viewModel.selectedRange.collectAsState()
+
+    val slices = when(selectedRange){
+        0 -> viewModel.monthlySlice.collectAsState().value
+        1 -> viewModel.threeMonthSlice.collectAsState().value
+        2 -> viewModel.yearlySlice.collectAsState().value
+        else -> emptyList()
+    }
     Column {
         HeadingSection()
         Spacer(modifier.height(20.dp))
@@ -86,52 +95,49 @@ fun OverallScreenModules(modifier: Modifier = Modifier, viewModel: AnalyticsView
         Spacer(modifier.height(20.dp))
         TriCards(viewModel = viewModel)
         Spacer(modifier.height(20.dp))
-        DonutChart()
+        DonutChart(slices = slices)
         Spacer(modifier.height(20.dp))
         BarchartSection()
     }
 }
 
 @Composable
-fun DonutChart() {
+fun DonutChart(
+    slices: List<DonutSlice>,
+    modifier: Modifier = Modifier,
+    thickness: Float = 100f
+) {
+    var start by remember { mutableStateOf(false) }
 
-    var startAnimation by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) { startAnimation = true }
-
-    val sweep by animateFloatAsState(
-        targetValue = if (startAnimation) 360f else 0f,
-        animationSpec = tween(durationMillis = 3000, easing = FastOutSlowInEasing)
-    )
-    val slices = listOf(
-        0.4f to Color.Green,
-        0.3f to Color.Blue,
-        0.2f to Color.Red,
-        0.1f to Color.Yellow
+    val animatedProgress by animateFloatAsState(
+        targetValue = if (start) 1f else 0f,
+        animationSpec = tween(durationMillis = 3000, delayMillis = 3000, easing = FastOutSlowInEasing),
+        label = "Donut Chart"
     )
 
-    Canvas(modifier = Modifier.size(200.dp)) {
+    LaunchedEffect(Unit) {
+        start = true
+    }
 
-
+    Canvas(modifier.size(220.dp)) {
+        val total = slices.sumOf { it.amount.toDouble() }.toFloat()
         var startAngle = -90f
-        val thickness = 80f
+        slices.forEach { slice ->
 
-        slices.forEach { (f, color) ->
-
-            val fullsizeSweep = f * 360
-
-            val visibleSweep = (sweep - (startAngle + 90f)).coerceIn(0f ,fullsizeSweep)
+            val sweepAngle = (slice.amount  / total) *360f
             drawArc(
-                color = color,
+                color = slice.color,
                 startAngle = startAngle,
-                sweepAngle = visibleSweep,
+                sweepAngle = sweepAngle * animatedProgress,
                 useCenter = false,
-                style = Stroke(width = thickness, cap = StrokeCap.Square)
+                style = Stroke(
+                    width = thickness,
+                    cap = StrokeCap.Round
+                )
             )
-            startAngle += fullsizeSweep
+
+            startAngle = startAngle+ sweepAngle
         }
-
-
     }
 }
 
@@ -205,7 +211,6 @@ fun TriCards(modifier: Modifier = Modifier, viewModel: AnalyticsViewModel) {
                 Text("Expenses")
                 Spacer(modifier.height(10.dp))
                 Text("$count", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
-
             }
         }
     }
