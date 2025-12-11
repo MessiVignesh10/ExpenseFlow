@@ -51,6 +51,7 @@ import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -67,6 +68,7 @@ import com.example.expenseflow.viewmodel.AnalyticsUiState
 import com.example.expenseflow.viewmodel.AnalyticsViewModel
 import com.example.expenseflow.viewmodel.DonutSlice
 import kotlin.collections.emptyList
+import kotlin.math.min
 
 @Composable
 fun AnalyticsScreen(modifier: Modifier = Modifier, viewModel: AnalyticsViewModel = viewModel()) {
@@ -107,36 +109,47 @@ fun DonutChart(
     modifier: Modifier = Modifier,
     thickness: Float = 100f
 ) {
-    var start by remember { mutableStateOf(false) }
+    var startAnimation by remember { mutableStateOf(false) }
+
+    LaunchedEffect(slices) {
+        startAnimation = true
+    }
 
     val animatedProgress by animateFloatAsState(
-        targetValue = if (start) 1f else 0f,
-        animationSpec = tween(durationMillis = 3000, delayMillis = 3000, easing = FastOutSlowInEasing),
+        targetValue = if (startAnimation) 1f else 0f,
+        animationSpec = tween(
+            durationMillis = 3000,
+            delayMillis = 3000,
+            easing = FastOutSlowInEasing
+        ),
         label = "Donut Chart"
     )
 
-    LaunchedEffect(Unit) {
-        start = true
-    }
+    ElevatedCard(modifier = modifier.fillMaxWidth().padding(horizontal = 30.dp)) {
 
-    Canvas(modifier.size(220.dp)) {
-        val total = slices.sumOf { it.amount.toDouble() }.toFloat()
-        var startAngle = -90f
-        slices.forEach { slice ->
-
-            val sweepAngle = (slice.amount  / total) *360f
-            drawArc(
-                color = slice.color,
-                startAngle = startAngle,
-                sweepAngle = sweepAngle * animatedProgress,
-                useCenter = false,
-                style = Stroke(
-                    width = thickness,
-                    cap = StrokeCap.Round
+        Canvas(modifier.size(150.dp).padding(vertical = 10.dp).align(alignment = Alignment.CenterHorizontally)) {
+            val animateTotalSweep = 360f * animatedProgress
+            val total = slices.sumOf { it.amount.toDouble() }.toFloat()
+            var startAngle = -90f
+            var drawSweep = 0f
+            for (slice in slices) {
+                val sliceSweep = (slice.amount / total) * 360f
+                val remainingSweep = animateTotalSweep - drawSweep
+                if (remainingSweep <= 0f) break
+                val visibleSweep = min(sliceSweep, remainingSweep)
+                drawArc(
+                    color = slice.color,
+                    startAngle = startAngle,
+                    sweepAngle = visibleSweep,
+                    useCenter = false,
+                    style = Stroke(
+                        width = thickness,
+                        cap = StrokeCap.Butt
+                    )
                 )
-            )
-
-            startAngle = startAngle+ sweepAngle
+                startAngle += sliceSweep
+                drawSweep += sliceSweep
+            }
         }
     }
 }
