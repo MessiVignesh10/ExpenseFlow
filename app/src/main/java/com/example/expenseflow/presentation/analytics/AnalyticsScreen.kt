@@ -5,10 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,15 +14,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,41 +31,28 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import co.yml.charts.axis.AxisData
-import co.yml.charts.common.model.Point
-import co.yml.charts.ui.barchart.BarChart
-import co.yml.charts.ui.barchart.models.BarChartData
-import co.yml.charts.ui.barchart.models.BarChartType
-import co.yml.charts.ui.barchart.models.BarData
 import com.example.expenseflow.R
-import com.example.expenseflow.viewmodel.AnalyticsUiState
 import com.example.expenseflow.viewmodel.AnalyticsViewModel
 import com.example.expenseflow.viewmodel.DonutSlice
 import kotlin.collections.emptyList
 import kotlin.math.min
 
 @Composable
-fun AnalyticsScreen(modifier: Modifier = Modifier, viewModel: AnalyticsViewModel = viewModel()) {
+fun AnalyticsScreen(viewModel: AnalyticsViewModel = viewModel()) {
     Column {
         OverallScreenModules(viewModel = viewModel)
-
     }
 }
 
@@ -85,12 +63,11 @@ fun OverallScreenModules(modifier: Modifier = Modifier, viewModel: AnalyticsView
     val selectedRange by viewModel.selectedRange.collectAsState()
 
     val slices = when(selectedRange){
-        0 -> viewModel.monthlySlice.collectAsState().value
-        1 -> viewModel.threeMonthSlice.collectAsState().value
         2 -> viewModel.yearlySlice.collectAsState().value
-        else -> emptyList()
+        else -> null
     }
-    Column {
+
+        Column {
         HeadingSection()
         Spacer(modifier.height(20.dp))
         TriToggle(selectedIndex = selectedRange, onSelected = { viewModel.selectedRange(it) })
@@ -105,9 +82,9 @@ fun OverallScreenModules(modifier: Modifier = Modifier, viewModel: AnalyticsView
 
 @Composable
 fun DonutChart(
-    slices: List<DonutSlice>,
+    slices: List<DonutSlice>?,
     modifier: Modifier = Modifier,
-    thickness: Float = 100f
+    thickness: Float = 60f
 ) {
     var startAnimation by remember { mutableStateOf(false) }
 
@@ -124,31 +101,35 @@ fun DonutChart(
         ),
         label = "Donut Chart"
     )
-
-    ElevatedCard(modifier = modifier.fillMaxWidth().padding(horizontal = 30.dp)) {
-
-        Canvas(modifier.size(150.dp).padding(vertical = 10.dp).align(alignment = Alignment.CenterHorizontally)) {
-            val animateTotalSweep = 360f * animatedProgress
-            val total = slices.sumOf { it.amount.toDouble() }.toFloat()
-            var startAngle = -90f
-            var drawSweep = 0f
-            for (slice in slices) {
-                val sliceSweep = (slice.amount / total) * 360f
-                val remainingSweep = animateTotalSweep - drawSweep
-                if (remainingSweep <= 0f) break
-                val visibleSweep = min(sliceSweep, remainingSweep)
-                drawArc(
-                    color = slice.color,
-                    startAngle = startAngle,
-                    sweepAngle = visibleSweep,
-                    useCenter = false,
-                    style = Stroke(
-                        width = thickness,
-                        cap = StrokeCap.Butt
+    if (slices != null) {
+        Column(modifier.fillMaxWidth()) {
+            Canvas(
+                modifier.size(80.dp)
+                    .align(alignment = Alignment.CenterHorizontally)
+            ) {
+                val animateTotalSweep = 360f * animatedProgress
+                val total = slices.sumOf { it.amount.toDouble() }.toFloat()
+                var startAngle = -90f
+                var drawSweep = 0f
+                val spaceBetween = 2f
+                for (slice in slices.sortedByDescending { it.amount }) {
+                    val sliceSweep = (slice.amount / total) * 360f
+                    val remainingSweep = animateTotalSweep - drawSweep
+                    if (remainingSweep <= 0f) break
+                    val visibleSweep = min(sliceSweep, remainingSweep)
+                    drawArc(
+                        color = slice.color,
+                        startAngle = startAngle,
+                        sweepAngle = visibleSweep,
+                        useCenter = false,
+                        style = Stroke(
+                            width = thickness,
+                            cap = StrokeCap.Butt
+                        )
                     )
-                )
-                startAngle += sliceSweep
-                drawSweep += sliceSweep
+                    startAngle += sliceSweep + spaceBetween
+                    drawSweep += sliceSweep + spaceBetween
+                }
             }
         }
     }
@@ -337,11 +318,9 @@ fun CustomBarChart(modifier: Modifier = Modifier, viewModel: AnalyticsViewModel 
             val spaceRatio = 0.2f
             val segmentWidth = totalWidth / barCount
             val barWidth = segmentWidth * (1f - spaceRatio)
-            val spaceBetween = segmentWidth * spaceRatio
-
             var currentX = 0f
 
-            data.forEachIndexed { idx, value ->
+            data.forEachIndexed { idx, _ ->
 
                 val height = animatedHeight[idx]
                 val barX = currentX + (segmentWidth - barWidth) / 2f
@@ -398,6 +377,6 @@ fun CustomBarChart(modifier: Modifier = Modifier, viewModel: AnalyticsViewModel 
 
 @Preview
 @Composable
-private fun pri() {
+private fun Pri() {
     AnalyticsScreen()
 }

@@ -204,54 +204,12 @@ class AnalyticsViewModel : ViewModel() {
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
-    val monthlySlice = uiState.map { state ->
-        if (state is AnalyticsUiState.Success)
-            getMonthlySlices(expenses = state.expenses)
-        else emptyList()
-    }.stateIn(viewModelScope , SharingStarted.Eagerly , initialValue = emptyList())
-
-    val threeMonthSlice = uiState.map { state ->
-        if (state is AnalyticsUiState.Success)
-            getThreeMonthSlices(expenses = state.expenses)
-        else emptyList()
-    }.stateIn(viewModelScope, SharingStarted.Eagerly,emptyList())
-
     val yearlySlice = uiState.map { state ->
         if (state is AnalyticsUiState.Success)
             getYearlySlice(expenses = state.expenses)
         else emptyList()
     }.stateIn(viewModelScope, SharingStarted.Eagerly,emptyList())
 
-
-
-    fun getMonthlySlices(expenses: List<Expense>): List<DonutSlice> {
-
-        val monthList = filterByRange(expenses, 0)
-        return monthList
-            .groupBy { it.category }
-            .map { (category, items) ->
-                DonutSlice(
-                    category = category,
-                    items.sumOf { it.amount }.toFloat(),
-                    color = pickColorForCategory(category)
-                )
-            }
-    }
-
-    fun getThreeMonthSlices(expenses: List<Expense>): List<DonutSlice> {
-
-        val threeMonthsList = filterByRange(expenses, 1)
-
-        return threeMonthsList
-            .groupBy { it.category }
-            .map { (category, items) ->
-                DonutSlice(
-                    category = category,
-                    amount = items.sumOf { it.amount }.toFloat(),
-                    color = pickColorForCategory(category)
-                )
-            }
-    }
     fun getYearlySlice(expenses: List<Expense>): List<DonutSlice> {
 
         val yearlyList = filterByRange(expenses, 2)
