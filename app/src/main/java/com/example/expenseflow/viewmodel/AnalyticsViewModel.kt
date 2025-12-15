@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import java.util.Collections.emptyList
 import java.util.Locale
 import kotlin.math.exp
 
@@ -19,6 +20,7 @@ import kotlin.math.exp
 data class DonutSlice(
     val category: Category,
     val amount: Float,
+    val percentage: Float,
     val color: Color
 )
 
@@ -208,21 +210,33 @@ class AnalyticsViewModel : ViewModel() {
         if (state is AnalyticsUiState.Success)
             getYearlySlice(expenses = state.expenses)
         else emptyList()
-    }.stateIn(viewModelScope, SharingStarted.Eagerly,emptyList())
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     fun getYearlySlice(expenses: List<Expense>): List<DonutSlice> {
 
         val yearlyList = filterByRange(expenses, 2)
 
-        return yearlyList
-            .groupBy { it.category }
-            .map { (category, items) ->
-                DonutSlice(
-                    category = category,
-                    amount = items.sumOf { it.amount }.toFloat(),
-                    color = pickColorForCategory(category)
-                )
-            }
+        val grouped = yearlyList.groupBy { it.category }
+
+        val categoryTotals = grouped.map { (category, items) ->
+            category to items.sumOf { it.amount }.toFloat()
+        }
+
+        val grandTotal = categoryTotals.sumOf { it.second.toDouble() }
+
+        return categoryTotals
+            .sortedByDescending { it.second }
+            .map { (category, amount) ->
+            val percentage = if (grandTotal > 0f) ((amount / grandTotal) * 100f).toFloat() else 0f
+
+            DonutSlice(
+                category = category,
+                amount = amount,
+                percentage = percentage,
+                color = pickColorForCategory(category = category)
+            )
+
+        }
     }
 
     private fun pickColorForCategory(category: Category): Color {
