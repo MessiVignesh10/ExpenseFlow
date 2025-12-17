@@ -64,4 +64,8 @@ class AuthViewModel : ViewModel() {
             }
         }
     }
+    fun signOut(){
+        authRepository.signOut()
+        _authState.value = AuthState.Idle
+    }
 }

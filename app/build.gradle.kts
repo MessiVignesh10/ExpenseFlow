@@ -66,5 +66,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     implementation(libs.ycharts)
+    implementation("androidx.lifecycle:lifecycle-process:2.8.4")
 
 }

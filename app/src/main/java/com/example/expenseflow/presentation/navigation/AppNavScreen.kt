@@ -10,12 +10,18 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -27,6 +33,7 @@ import com.example.expenseflow.presentation.dashboard.DashboardScreen
 import com.example.expenseflow.presentation.history.HistoryScreen
 import com.example.expenseflow.presentation.login.LoginPage
 import com.example.expenseflow.ui.theme.greenPrimary
+import com.example.expenseflow.viewmodel.AuthViewModel
 
 data class BottomNavItem(
     val icon: Painter,
@@ -35,8 +42,26 @@ data class BottomNavItem(
 )
 
 @Composable
-fun AppNavScreen(modifier: Modifier = Modifier, navController: NavHostController) {
+fun AppNavScreen(
+    modifier: Modifier = Modifier,
+    navController: NavHostController,
+    authViewModel: AuthViewModel
+) {
 
+    val lifecycleOwner = ProcessLifecycleOwner.get()
+
+
+    DisposableEffect(Unit) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP )
+            {
+                authViewModel.signOut()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
     val bottomNavItems =
         listOf(
             BottomNavItem(

@@ -15,5 +15,5 @@ private fun String.safeDateFormatter():LocalDate{
 }
 
 fun Expense.localDate():LocalDate{
-    return date.safeDateFormatter()
+   return date.safeDateFormatter()
 }
