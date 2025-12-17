@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.time.YearMonth
-import kotlin.math.exp
 
 sealed class HistoryState() {
     object Loading : HistoryState()
@@ -47,6 +46,8 @@ class HistoryViewModel : ViewModel() {
 
     private val _monthExpense = MutableStateFlow<String>("")
     val monthExpense : StateFlow<String> = _monthExpense
+
+
 
     init {
         loadExpenses()

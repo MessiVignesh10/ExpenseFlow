@@ -25,6 +25,7 @@ import com.example.expenseflow.presentation.add.AddExpenseScreen
 import com.example.expenseflow.presentation.analytics.AnalyticsScreen
 import com.example.expenseflow.presentation.dashboard.DashboardScreen
 import com.example.expenseflow.presentation.history.HistoryScreen
+import com.example.expenseflow.presentation.login.LoginPage
 import com.example.expenseflow.ui.theme.greenPrimary
 
 data class BottomNavItem(
@@ -61,48 +62,54 @@ fun AppNavScreen(modifier: Modifier = Modifier, navController: NavHostController
         )
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    val showBottomBar = bottomNavItems.any { it.route == currentDestination?.route }
 
 
     Scaffold(modifier = modifier.fillMaxSize(), bottomBar = {
-        BottomAppBar(
-            containerColor = Color.White,
-        ) {
-            bottomNavItems.forEach { item ->
-                val selected = currentDestination?.route == item.route
-                NavigationBarItem(
-                    selected = selected,
-                    onClick = {
-                        navController.navigate(item.route) {
-                            popUpTo(navController.graph.startDestinationId) {
-                                saveState = true
+        if (showBottomBar) {
+            BottomAppBar(
+                containerColor = Color.White,
+            ) {
+                bottomNavItems.forEach { item ->
+                    val selected = currentDestination?.route == item.route
+                    NavigationBarItem(
+                        selected = selected,
+                        onClick = {
+                            navController.navigate(item.route) {
+                                popUpTo(navController.graph.startDestinationId) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
                             }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
-                    icon = {
-                        Icon(
-                            painter = item.icon,
-                            contentDescription = item.label,
-                            modifier = Modifier.size(24.dp)
+                        },
+                        icon = {
+                            Icon(
+                                painter = item.icon,
+                                contentDescription = item.label,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        },
+                        label = { Text(item.label) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = greenPrimary,
+                            unselectedIconColor = Color.Gray,
+                            unselectedTextColor = Color.Gray,
+                            indicatorColor = Color.Transparent
                         )
-                    },
-                    label = { Text(item.label) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = greenPrimary,
-                        unselectedIconColor = Color.Gray,
-                        unselectedTextColor = Color.Gray,
-                        indicatorColor = Color.Transparent
                     )
-                )
+                }
             }
         }
     }) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = NavState.DashBoardScreen.route,
+            startDestination = NavState.LoginScreen.route,
             modifier = Modifier.padding(innerPadding)
         ) {
+            composable(NavState.LoginScreen.route) {
+                LoginPage(onLoginSuccess = { navController.navigate(NavState.DashBoardScreen.route) })
+            }
             composable(NavState.DashBoardScreen.route) {
                 DashboardScreen(navController = navController)
             }
